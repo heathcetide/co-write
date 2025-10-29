@@ -1,7 +1,6 @@
 package com.cowrite.project.task.backup;
 
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +14,7 @@ public class BackupScheduler {
         try {
             executorService.submit(() -> {
                 try {
-                    MySQLBackup.fullBackup("localhost", "3306", "root", "1234", "food_record", "G:/项目实战/project-6_shiguang-Brand/shiguang-brand/data/backups");
+                    com.cowrite.project.task.backup.MySQLBackup.fullBackup("localhost", "3306", "root", "1234", "food_record", "G:/项目实战/project-6_shiguang-Brand/shiguang-brand/data/backups");
                     System.out.println("Full backup completed!");
                 } catch (Exception e) {
                     e.printStackTrace();

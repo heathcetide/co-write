@@ -1,0 +1,25 @@
+<!-- JMeter测试计划示例 -->
+<TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="博客系统压力测试">
+  <elementProp name="ThreadGroup" elementclass="ThreadGroup">
+    <stringProp name="ThreadGroup.num_threads">100</stringProp>
+    <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+  </elementProp>
+  <HTTPSamplerProxy guiclass="HttpTestSampleGui" testname="文章列表接口">
+    <elementProp name="HTTPsampler.Arguments">
+      <collectionProp name="Arguments.arguments"/>
+    </elementProp>
+    <stringProp name="HTTPSampler.domain">localhost</stringProp>
+    <stringProp name="HTTPSampler.port">8080</stringProp>
+    <stringProp name="HTTPSampler.path">/api/articles</stringProp>
+  </HTTPSamplerProxy>
+  <hashTree>
+    <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="用户数据">
+      <stringProp name="filename">users.csv</stringProp>
+    </CSVDataSet>
+    
+    <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" 
+      testname="随机等待" enabled="true">
+      <stringProp name="Range">300</stringProp>
+    </UniformRandomTimer>
+  </hashTree>
+</TestPlan> 
