@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket 文档协同编辑测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        textarea { width: 100%; height: 200px; margin-top: 10px; }
+        .log { margin-top: 20px; height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+        .status { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h2>WebSocket 文档协同编辑测试</h2>
+
+<label for="userId">用户ID：</label>
+<input type="text" id="userId" value="user123" />
+
+<label for="docId">文档ID：</label>
+<input type="text" id="docId" value="doc456" />
+
+<button onclick="connectWebSocket()">连接</button>
+<span class="status" id="status">未连接</span>
+
+<h3>发送操作</h3>
+<label>操作类型：</label>
+<select id="operationType">
+    <option value="insert">插入</option>
+    <option value="delete">删除</option>
+</select>
+
+<label>内容：</label>
+<input type="text" id="content" value="Hello" />
+
+<label>位置：</label>
+<input type="number" id="index" value="0" />
+
+<button onclick="sendOperation()">发送操作</button>
+
+<h3>当前文档内容</h3>
+<textarea id="documentContent" readonly>初始内容</textarea>
+
+<h3>操作日志</h3>
+<div id="log" class="log"></div>
+
+<script>
+    let ws = null;
+    let userId = '';
+    let docId = '';
+    let documentContent = '初始内容';
+    let reconnectAttempts = 0;
+    let maxReconnectAttempts = 5;
+    let heartbeatInterval = 30000; // 每 30 秒发送一次心跳
+    let heartbeatTimer = null;
+
+    function log(message) {
+        const logDiv = document.getElementById("log");
+        logDiv.innerHTML += `<div>> ${message}</div>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function setStatus(status) {
+        const statusDiv = document.getElementById("status");
+        statusDiv.textContent = status;
+    }
+
+    function connectWebSocket() {
+        userId = document.getElementById("userId").value.trim();
+        docId = document.getElementById("docId").value.trim();
+
+        if (!userId || !docId) {
+            alert("请输入用户ID和文档ID");
+            return;
+        }
+
+        const wsUrl = "ws://localhost:8080/ws";
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function () {
+            log("✅ WebSocket 连接成功");
+            setStatus("连接成功");
+            reconnectAttempts = 0;
+
+            // 发送初始化信息
+            ws.send(JSON.stringify({
+                userId: userId,
+                docId: docId,
+                operationType: "init",
+                content: "",
+                index: 0
+            }));
+
+            // 启动心跳
+            startHeartbeat();
+        };
+
+        ws.onmessage = function (event) {
+            log("📩 收到消息: " + event.data);
+
+            try {
+                const msg = JSON.parse(event.data);
+                const opType = msg.operationType;
+                const content = msg.content;
+                const index = msg.index;
+
+                if (opType === "insert") {
+                    documentContent = insertText(documentContent, content, index);
+                } else if (opType === "delete") {
+                    documentContent = deleteText(documentContent, index, content.length);
+                }
+
+                document.getElementById("documentContent").value = documentContent;
+            } catch (e) {
+                log("⚠️ 解析消息失败: " + e.message);
+            }
+        };
+
+        ws.onclose = function () {
+            log("🔌 WebSocket 连接已关闭");
+            setStatus("连接已关闭");
+
+            stopHeartbeat();
+
+            // 尝试自动重连
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                log(`🔁 正在尝试重连（第 ${reconnectAttempts} 次）`);
+                setTimeout(connectWebSocket, 3000); // 3秒后重连
+            } else {
+                log("❌ 已达最大重试次数，停止连接");
+            }
+        };
+
+        ws.onerror = function (error) {
+            log("❌ WebSocket 错误: " + error);
+            ws.close();
+        };
+    }
+
+    function startHeartbeat() {
+        stopHeartbeat(); // 避免重复启动
+        heartbeatTimer = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "ping", timestamp: Date.now() }));
+                log("💓 发送心跳 ping");
+            }
+        }, heartbeatInterval);
+    }
+
+    function stopHeartbeat() {
+        if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+        }
+    }
+
+    function sendOperation() {
+        const opType = document.getElementById("operationType").value;
+        const content = document.getElementById("content").value;
+        const index = parseInt(document.getElementById("index").value);
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            alert("WebSocket 未连接");
+            return;
+        }
+
+        const message = {
+            userId: userId,
+            docId: docId,
+            operationType: opType,
+            content: content,
+            index: index,
+            timestamp: Date.now()
+        };
+
+        ws.send(JSON.stringify(message));
+        log("📤 已发送操作: " + JSON.stringify(message));
+    }
+
+    function insertText(text, insertContent, position) {
+        return text.slice(0, position) + insertContent + text.slice(position);
+    }
+
+    function deleteText(text, position, length) {
+        return text.slice(0, position) + text.slice(position + length);
+    }
+</script>
+
+</body>
+</html>
