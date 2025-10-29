@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cowrite.project.mapper.DocumentShareMapper">
+    <resultMap id="BaseResultMap" type="com.cowrite.project.model.entity.DocumentShare">
+        <id column="id" property="id" />
+        <result column="document_id" property="documentId" />
+        <result column="share_from_user_id" property="shareFromUserId" />
+        <result column="share_to_user_id" property="shareToUserId" />
+        <result column="share_type" property="shareType" />
+        <result column="short_code" property="shortCode" />
+        <result column="share_link" property="shareLink" />
+        <result column="expire_time" property="expireTime" />
+        <result column="permission" property="permission" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`,
+        `document_id`,
+        `share_from_user_id`,
+        `share_to_user_id`,
+        `share_type`,
+        `short_code`,
+        `share_link`,
+        `expire_time`,
+        `permission`,
+        `status`,
+        `remark`,
+        `created_at`,
+        `updated_at`
+    </sql>
+</mapper>

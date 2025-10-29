@@ -1,0 +1,20 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://cd-cynosdbmysql-grp-lfa6zfg0.sql.tencentcdb.com:23771/docnest_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&noAccessToProcedureBodies=false
+    username: root
+    password: ct288513832##
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 18   # 最大连接池数量
+      minimum-idle: 10        # 最小空闲连接数量
+      connection-timeout: 30000  # 连接超时时间
+      idle-timeout: 600000    # 空闲连接回收时间
+      max-lifetime: 1800000   # 最大连接存活时间
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true

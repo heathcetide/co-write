@@ -1,0 +1,22 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: ${H2_URL:jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    driver-class-name: org.h2.Driver
+    username: ${H2_USER:sa}
+    password: ${H2_PASSWORD:}
+    platform: h2
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+netty:
+  enabled: false
