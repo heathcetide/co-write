@@ -1,0 +1,20 @@
+{
+  "name": "hibiscusfs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "dependencies": {
+    "express": "^5.1.0",
+    "fs-extra": "^11.3.0",
+    "ini": "^5.0.0",
+    "jieba": "^1.0.0",
+    "multer": "^2.0.2",
+    "node-jieba": "^0.0.3",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  }
+}
