@@ -1,7 +1,7 @@
 <template>
   <div class="online-wrapper">
     <button class="toggle-btn" @click="visible = !visible">
-      {{ visible ? '👥 隐藏用户列表' : '👥 查看在线用户' }}
+      <Users class="btn-icon" /> {{ visible ? '隐藏用户列表' : '查看在线用户' }}
     </button>
 
     <transition name="fade">
@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Users } from 'lucide-vue-next'
 
 defineProps<{
   users: string[]
@@ -45,26 +46,26 @@ const visible = ref(true)
 }
 
 .toggle-btn {
-  background-color: #0ea5e9;
+  background-color: #2563eb;
   color: white;
   border: none;
   border-radius: 0.5rem;
-  padding: 0.4rem 0.75rem;
+  padding: 0.35rem 0.7rem;
   cursor: pointer;
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.06);
 }
 .toggle-btn:hover {
-  background-color: #0284c7;
+  background-color: #1d4ed8;
 }
 
 .online-panel {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-  padding: 1rem;
+  box-shadow: 0 8px 16px rgba(2, 6, 23, 0.06);
+  padding: 0.9rem;
   width: 220px;
   max-height: 250px;
   overflow-y: auto;

@@ -81,7 +81,7 @@ const menuItems = [
 
 .main-content .content-area {
   flex: 1;
-  background-color: #f8fafc;
+  background-color: #ffffff;
   overflow-y: auto;
 }
 

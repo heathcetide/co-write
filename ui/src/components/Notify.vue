@@ -5,7 +5,7 @@
       @mouseenter="clearTimer"
       @mouseleave="startTimer"
   >
-    <div class="icon">{{ icon }}</div>
+  <div class="icon"><component :is="icon" class="notify-icon" /></div>
     <div class="content">
       <p class="title">{{ title }}</p>
       <p class="description" v-if="description">{{ description }}</p>
@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, computed } from 'vue'
+import { CheckCircle2, XCircle, Info, AlertTriangle } from 'lucide-vue-next'
 
 const props = defineProps<{
   id: number
@@ -41,11 +42,11 @@ const close = () => {
 
 const icon = computed(() => {
   switch (props.type) {
-    case 'success': return '✅'
-    case 'error': return '❌'
-    case 'info': return 'ℹ️'
-    case 'warning': return '⚠️'
-    default: return ''
+    case 'success': return CheckCircle2
+    case 'error': return XCircle
+    case 'info': return Info
+    case 'warning': return AlertTriangle
+    default: return Info
   }
 })
 
@@ -74,9 +75,13 @@ onBeforeUnmount(clearTimer)
 .warning { background-color: #fefce8; border-color: #fde68a; }
 
 .icon {
-  font-size: 20px;
   line-height: 1;
   margin-top: 2px;
+}
+
+.notify-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .content {

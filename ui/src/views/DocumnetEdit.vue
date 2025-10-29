@@ -158,7 +158,7 @@ function onMdChange(text: string) {
   const ops = getDiffOps(prevContent.value, text)
   prevContent.value = text
   if (ops.length > 0) {
-    console.log('📌 Detected diff operations:', ops)
+    console.log('Detected diff operations:', ops)
     opHistory.value.push(...ops)  // 保存记录
     const firstOp = ops[0]
     const payload = {
@@ -249,9 +249,9 @@ async function triggerSave(latestOp = 'manual') {
   try {
     await api.documentApi.saveContent(docId.value, payload)
     lastSaved = { ...payload }
-    console.log('✅ 自动保存成功', latestOp)
+    console.log('自动保存成功', latestOp)
   } catch (err) {
-    console.error('❌ 保存失败', err)
+    console.error('保存失败', err)
   }
 }
 
@@ -299,7 +299,7 @@ function toggleCollab() {
   } else {
     closeWebSocket()
   }
-  console.log(`🔁 协同模式 ${isCollabMode.value ? '开启' : '关闭'}`)
+  console.log(`协同模式 ${isCollabMode.value ? '开启' : '关闭'}`)
 }
 const showToc = ref(false)
 function toggleToc() {
@@ -491,23 +491,23 @@ function initWebSocket() {
     }
 
     sendWSMessage(payload)
-    console.log('✅ WebSocket connected')
+    console.log('WebSocket connected')
   }
   socket.value.onclose = () => {
-    console.warn('❌ WebSocket disconnected')
+    console.warn('WebSocket disconnected')
   }
   socket.value.onerror = (err) => {
-    console.error('🚨 WebSocket error', err)
+    console.error('WebSocket error', err)
   }
   socket.value.onmessage = (event) => {
     const data = JSON.parse(event.data)
     if (data.type === 'USER_ONLINE' && data.payload?.onlineusers) {
       onlineUsers.value = data.payload.onlineusers
-      toastRef.value?.addMessage(`👤 ${data.payload.message} 上线了`)
+      toastRef.value?.addMessage(`${data.payload.message} 上线了`)
     }
     if (data.type === 'USER_ONLINE' && data.payload?.onlineusers) {
       onlineUsers.value = data.payload.onlineusers
-      toastRef.value?.addMessage(`👤 ${data.payload.message} 下线了`)
+      toastRef.value?.addMessage(`${data.payload.message} 下线了`)
     }
     if (data.type === 'MOUSE_MOVE') {
       console.log('到这里', data.payload)
@@ -525,7 +525,7 @@ function initWebSocket() {
       applyRemoteOperation(data) // 执行插入或删除
       return
     }
-    console.log('📨 Received message:', event.data)
+    console.log('Received message:', event.data)
   }
 }
 

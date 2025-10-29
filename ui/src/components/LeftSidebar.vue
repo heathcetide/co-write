@@ -2,8 +2,8 @@
   <aside class="left-sidebar" :class="{ collapsed }">
     <!-- 侧边栏折叠按钮 -->
     <div class="collapse-trigger" @click="toggleSidebar">
-<!--      <IconMdiChevronRight v-if="collapsed" />-->
-<!--      <IconMdiChevronLeft v-else />-->
+      <ChevronRight v-if="collapsed" class="collapse-icon" />
+      <ChevronLeft v-else class="collapse-icon" />
     </div>
 
     <!-- 用户信息卡片 -->
@@ -14,9 +14,11 @@
     >
       <div class="user-org-card">
         <div class="user-org">
-          <img class="avatar" :src="userInfo?.avatarUrl" alt="avatar" />
+          <div class="avatar" :style="avatarStyle">
+            <span class="avatar-text">{{ avatarText }}</span>
+          </div>
           <div class="user-meta" v-if="!collapsed">
-            <div class="nickname">👤 {{ userInfo?.username }}</div>
+            <div class="nickname"><User class="inline-icon" /> {{ userInfo?.username }}</div>
           </div>
         </div>
       </div>
@@ -49,7 +51,7 @@
       <div class="org-info-card">
         <i class="iconfont icon-organization"></i>
         <span class="org-prefix"><strong>当前所属的组织 :  </strong></span>
-        <span class="org-name"><strong>{{ currentOrg?.name || "还未选择组织噢"}}</strong></span>
+        <span class="org-name"><strong>{{ currentOrg?.name || ''}}</strong></span>
         <i class="iconfont icon-chevron-right"></i>
         <div class="card-decoration"></div>
       </div>
@@ -115,7 +117,7 @@
           :class="{ active: selectedMenuItem === startCreateItem.id }"
       >
         <i class="iconfont icon-create" />
-        <span class="label">✏️ {{ startCreateItem.label }}</span>
+        <span class="label"><Edit class="inline-icon" /> {{ startCreateItem.label }}</span>
         <span class="hover-effect"></span>
       </div>
 
@@ -127,7 +129,7 @@
           :class="{ active: selectedMenuItem === item.id }"
       >
         <i :class="['iconfont', item.icon]" />
-        <span class="label">{{ item.emoji }} {{ item.label }}</span>
+        <span class="label">{{ item.label }}</span>
         <span class="hover-effect"></span>
       </div>
     </nav>
@@ -135,7 +137,7 @@
     <!-- 知识库区域 -->
     <div class="repos" v-if="!collapsed">
       <div class="section-title-wrapper">
-        <h3 class="section-title">📚 我的知识库</h3>
+        <h3 class="section-title"><BookOpen class="inline-icon" /> 我的知识库</h3>
         <button class="add-repo-btn" @click="isCreateModalVisible = true"><strong>+</strong></button>
       </div>
       <ul class="repo-list">
@@ -146,7 +148,7 @@
             @click="selectRepository(repo)"
         >
           <i class="iconfont icon-folder" />
-          <span class="repo-name">📁 {{ repo.name }}</span>
+          <span class="repo-name"><Folder class="inline-icon" /> {{ repo.name }}</span>
           <span class="hover-effect"></span>
         </li>
       </ul>
@@ -176,6 +178,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import api from '../api/index'
+import { User, BookOpen, Folder, Edit, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 
 /**
  * 组织数据结构定义
@@ -238,8 +241,8 @@ const orgList = ref<Org[]>([])
 
 // 菜单项数据
 const menuItems = ref<MenuItem[]>([
-  { id: 'ai/documents', label: 'AI 写作', icon: 'icon-robot', emoji: '🤖' },
-  { id: 'diagrams', label: '绘图', icon: 'icon-diagram', emoji: '🧩' }
+  { id: 'ai/documents', label: 'AI 写作', icon: 'icon-robot' },
+  { id: 'diagrams', label: '绘图', icon: 'icon-diagram' }
 ])
 
 // 开始创作菜单项
@@ -362,6 +365,11 @@ const getOrganizationListQuickly = async () => {
   try {
     const res = await api.organizationApi.getOrganizationListQuickly();
     orgList.value = res.data || []
+    // 默认选择第一个组织
+    if (!currentOrgId.value && orgList.value.length > 0) {
+      currentOrgId.value = orgList.value[0].id
+      await loadRepositories()
+    }
   } catch (err) {
     console.error('查询组织失败', err)
   }
@@ -439,6 +447,28 @@ function onOrgMouseLeave() {
   }, 100)
 }
 
+// 计算头像样式和文本
+const avatarText = computed(() => {
+  const username = userInfo.value?.username || 'U'
+  return username.charAt(0).toUpperCase()
+})
+
+const avatarStyle = computed(() => {
+  const username = userInfo.value?.username || 'User'
+  // 基于用户名生成颜色
+  let hash = 0
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue = hash % 360
+  const saturation = 70
+  const lightness = 50
+  return {
+    backgroundColor: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+    color: '#ffffff'
+  }
+})
+
 // 组件挂载时时默认执行的初始化函数:
 onMounted(() => {
   // loadRepositories();       // 加载知识库
@@ -452,13 +482,13 @@ onMounted(() => {
 .left-sidebar {
   position: relative;
   width: 280px;
-  background-color: #f8f5ff; /* 浅紫色背景 */
-  border-right: 1px solid #e8e0f5; /* 浅紫色边框 */
+  background-color: #ffffff; /* 中性背景 */
+  /* 移除右边框 */
   height: 100vh; /* 全屏高度 */
-  padding: 1.5rem 1rem 0; /* 内边距 */
+  padding: 1.25rem 0.875rem 0; /* 更紧凑的内边距 */
   transition: all 0.3s ease; /* 平滑过渡效果 */
   overflow: visible; /* 允许内容溢出 */
-  box-shadow: 0 2px 12px rgba(148, 108, 230, 0.08); /* 柔和阴影 */
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04); /* 细分隔阴影 */
 }
 
 /* 折叠状态下的样式 */
@@ -476,20 +506,26 @@ onMounted(() => {
   height: 30px;
   background: #ffffff; /* 白色背景 */
   border-radius: 50%; /* 圆形 */
-  box-shadow: 0 2px 8px rgba(148, 108, 230, 0.2); /* 阴影效果 */
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.06); /* 轻阴影 */
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   z-index: 1001; /* 确保在最上层 */
   transition: all 0.2s ease; /* 过渡效果 */
-  border: 1px solid #e8e0f5; /* 边框 */
+  border: 1px solid #e5e7eb; /* 边框 */
 }
 
 /* 悬停效果 */
 .collapse-trigger:hover {
-  background: #f0e9ff; /* 浅紫色背景 */
+  background: #f8fafc; /* 浅灰背景 */
   transform: scale(1.05); /* 轻微放大 */
+}
+
+.collapse-icon {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
 }
 
 
@@ -519,9 +555,17 @@ onMounted(() => {
   height: 40px;
   border-radius: 50%; /* 圆形 */
   margin-right: 0.75rem; /* 右边距 */
-  object-fit: cover; /* 保证图片比例 */
-  border: 2px solid #f0e9ff; /* 浅紫色边框 */
-  box-shadow: 0 2px 4px rgba(148, 108, 230, 0.1); /* 阴影 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb; /* 中性边框 */
+  box-shadow: 0 2px 4px rgba(2, 6, 23, 0.06); /* 阴影 */
+}
+
+.avatar-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .user-meta {
@@ -534,7 +578,7 @@ onMounted(() => {
 .nickname {
   font-size: 15px;
   font-weight: 600; /* 加粗 */
-  color: #5e4dcd; /* 紫色文字 */
+  color: #0f172a; /* 中性文字 */
   margin-bottom: 6px; /* 下边距 */
 }
 
@@ -550,27 +594,23 @@ onMounted(() => {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 12px 14px; /* 内边距 */
+  padding: 10px 12px; /* 更紧凑的内边距 */
   background: white; /* 白色背景 */
   border-radius: 10px; /* 圆角 */
-  border: 1px solid rgba(138, 109, 232, 0.3); /* 半透明紫色边框 */
-  box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.8), /* 内阴影 */
-      0 2px 8px rgba(148, 108, 230, 0.1); /* 外阴影 */
+  border: 1px solid #e5e7eb; /* 中性边框 */
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04); /* 细分隔阴影 */
   cursor: pointer; /* 手型指针 */
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* 自定义缓动 */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease; /* 轻量缓动 */
   overflow: hidden; /* 隐藏溢出内容 */
   z-index: 1; /* 层级 */
 }
 
 /* 悬停效果 */
 .org-info-card:hover {
-  background: #f9f5ff; /* 浅紫色背景 */
-  transform: translateY(-2px); /* 上浮效果 */
-  border-color: rgba(138, 109, 232, 0.6); /* 边框颜色加深 */
-  box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.9), /* 内阴影增强 */
-      0 6px 16px rgba(148, 108, 230, 0.2); /* 外阴影增强 */
+  background: #f8fafc; /* 浅灰背景 */
+  transform: translateY(-1px); /* 轻微上浮 */
+  border-color: #dbeafe; /* 浅蓝边框 */
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.06); /* 轻阴影 */
 }
 
 /* 组织前缀文本样式 */
@@ -629,7 +669,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 12px 16px; /* 内边距 */
-  background: linear-gradient(135deg, #6a4dff 0%, #8a6de8 100%); /* 渐变背景 */
+  background: #2563eb; /* 纯色强调背景 */
   color: white; /* 白色文字 */
   cursor: pointer; /* 手型指针 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 自定义缓动 */
@@ -639,9 +679,9 @@ onMounted(() => {
 
 /* 悬停效果 */
 .tooltip-header:hover {
-  background: linear-gradient(135deg, #5a3dff 0%, #7a5dd8 100%); /* 渐变背景变深 */
+  background: #1d4ed8; /* 深一号蓝 */
   transform: translateY(-1px); /* 上浮效果 */
-  box-shadow: 0 2px 8px rgba(106, 77, 255, 0.2); /* 阴影 */
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.12); /* 阴影 */
 }
 
 .tooltip-header i {
@@ -709,16 +749,16 @@ onMounted(() => {
 
 /* 悬停效果 */
 .org-item:hover {
-  background-color: rgba(138, 109, 232, 0.05); /* 浅紫色背景 */
+  background-color: #f8fafc; /* 浅灰背景 */
 }
 
 /* 当前选中组织样式 */
 .org-item.active {
-  background-color: rgba(138, 109, 232, 0.1); /* 稍深的紫色背景 */
+  background-color: #eff6ff; /* 浅蓝背景 */
 }
 
 .org-item i {
-  color: #8a6de8; /* 紫色图标 */
+  color: #2563eb; /* 蓝色图标 */
   font-size: 14px; /* 图标大小 */
   margin-right: 10px; /* 右边距 */
 }
@@ -742,7 +782,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   padding: 8px 0; /* 内边距 */
-  color: #8a6de8; /* 紫色 */
+  color: #2563eb; /* 蓝色 */
   animation: bounce 2s infinite; /* 弹跳动画 */
 }
 
@@ -958,8 +998,8 @@ onMounted(() => {
 
 /* 激活菜单项样式 */
 .menu-item.active {
-  background-color: #f3eeff; /* 浅紫色背景 */
-  color: #5e4dcd; /* 紫色文字 */
+  background-color: #eff6ff; /* 浅蓝背景 */
+  color: #2563eb; /* 蓝色文字 */
 }
 
 .menu-item.active .hover-effect {
@@ -983,7 +1023,7 @@ onMounted(() => {
 .menu-item i {
   margin-right: 10px; /* 右边距 */
   font-size: 16px; /* 图标大小 */
-  color: #8a6de8; /* 紫色图标 */
+  color: #2563eb; /* 蓝色图标 */
 }
 
 .menu-item .label {
@@ -999,14 +1039,14 @@ onMounted(() => {
   left: 0;
   width: 0; /* 初始宽度为0 */
   height: 100%; /* 全高 */
-  background: linear-gradient(90deg, rgba(138, 109, 232, 0.1), transparent); /* 渐变 */
+  background: linear-gradient(90deg, rgba(219, 234, 254, 0.6), transparent); /* 渐变 */
   transition: width 0.3s ease; /* 宽度过渡 */
 }
 
 /* 悬停时效果 */
 .menu-item:hover {
-  background-color: #f3eeff; /* 浅紫色背景 */
-  color: #5e4dcd; /* 紫色文字 */
+  background-color: #f8fafc; /* 浅灰背景 */
+  color: #2563eb; /* 蓝色文字 */
 }
 
 .menu-item:hover .hover-effect {
@@ -1017,7 +1057,7 @@ onMounted(() => {
 .section-title {
   font-size: 13px;
   font-weight: 600;
-  color: #8a6de8;
+  color: #2563eb;
   margin: 1rem 0 0.75rem;
   padding-left: 8px;
   letter-spacing: 0.5px;
@@ -1047,12 +1087,12 @@ onMounted(() => {
 
 .repo-item i {
   margin-right: 10px;
-  color: #8a6de8;
+  color: #2563eb;
 }
 
 .repo-item:hover {
-  background-color: #f3eeff;
-  color: #5e4dcd;
+  background-color: #f8fafc;
+  color: #2563eb;
 }
 
 .repo-item:hover .hover-effect {
@@ -1084,7 +1124,7 @@ onMounted(() => {
 .add-repo-btn {
   width: 36px;
   height: 36px;
-  background: #5e4dcd;
+  background: #2563eb;
   color: white;
   border: none;
   border-radius: 50%; /* 圆形 */
@@ -1101,10 +1141,13 @@ onMounted(() => {
 }
 
 .add-repo-btn:hover {
-  background: #4c3cad;
+  background: #1d4ed8;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transform: scale(1.05);
 }
+
+/* 统一内嵌 lucide 图标的尺寸 */
+.inline-icon { width: 16px; height: 16px; vertical-align: -2px; }
 
 
 

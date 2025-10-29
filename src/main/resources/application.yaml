@@ -79,11 +79,10 @@ spring:
 
   # redis
   redis:
-    database: 1
-    host: 1.14.99.158
-    port: 6379
-    timeout: 5000
-    password:
+    host: 139.155.132.244
+    port: 26379
+    database: 0
+    password: 123456
 
   # MongoDB 配置
   data:

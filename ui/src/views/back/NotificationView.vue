@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { Bell, Trash2, CheckCircle2 } from 'lucide-vue-next';
+import { Bell, Trash2, CheckCircle2, MessageSquare, Clock, Filter } from 'lucide-vue-next';
 import api from '../../api/index';
 import Pagination from '../../components/Pagination.vue';
 const notifications = ref<any[]>([]);
@@ -90,11 +90,11 @@ onMounted(() => {
         <span class="unread" v-if="unreadCount > 0">未读 {{ unreadCount }}</span>
       </div>
       <div class="right">
-        <button @click="handleMarkAllAsRead">
-          <CheckCircle2 class="icon" /> 全部已读
+        <button class="action-btn primary" @click="handleMarkAllAsRead">
+          <CheckCircle2 class="btn-icon" /> 全部已读
         </button>
-        <button @click="handleClearAll">
-          <Trash2 class="icon" /> 清空
+        <button class="action-btn secondary" @click="handleClearAll">
+          <Trash2 class="btn-icon" /> 清空
         </button>
       </div>
     </div>
@@ -115,13 +115,19 @@ onMounted(() => {
           :class="{ unread: !item.read }"
       >
         <div class="content">
-          <h3>{{ item.title || '系统通知' }}</h3>
+          <div class="notification-header">
+            <MessageSquare class="notification-icon" />
+            <h3>{{ item.title || '系统通知' }}</h3>
+          </div>
           <p>{{ item.content }}</p>
-          <span class="time">{{ item.createdAt }}</span>
+          <div class="time-wrapper">
+            <Clock class="time-icon" />
+            <span class="time">{{ item.createdAt }}</span>
+          </div>
         </div>
         <div class="tools">
-          <button @click="handleMarkAsRead(item.id)" v-if="!item.read">标为已读</button>
-          <button @click="handleDelete(item.id)">删除</button>
+          <button class="tool-btn" @click="handleMarkAsRead(item.id)" v-if="!item.read">标为已读</button>
+          <button class="tool-btn danger" @click="handleDelete(item.id)">删除</button>
         </div>
       </div>
     </div>
@@ -153,8 +159,8 @@ onMounted(() => {
 
 <style scoped>
 .notification-view {
-  padding: 32px;
-  background: #f9fafb;
+  padding: 24px;
+  background: #ffffff;
   font-family: system-ui, sans-serif;
 }
 
@@ -162,87 +168,142 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
 .header .left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .header .left h1 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .header .left .unread {
   color: #ef4444;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 13px;
 }
 
-.header .right button {
-  background: #5e4dcd;
-  color: white;
+.header .right {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 8px 12px;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  margin-left: 10px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.header .right button:hover {
-  background: #4c3cad;
+.action-btn.primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.action-btn.primary:hover {
+  background: #1d4ed8;
+}
+
+.action-btn.secondary {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+}
+
+.action-btn.secondary:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
 
 .icon {
   width: 18px;
   height: 18px;
+  color: #2563eb;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .notification-item {
-  background: white;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 18px;
+  padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
 }
 
 .notification-item.unread {
-  border-left: 4px solid #5e4dcd;
-  background: #f3f0ff;
+  border-left: 4px solid #2563eb;
+  background: #eff6ff;
 }
 
 .notification-item:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.notification-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.notification-icon {
+  width: 16px;
+  height: 16px;
+  color: #2563eb;
+}
+
 .content h3 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 6px;
   font-weight: 600;
   color: #0f172a;
 }
 
 .content p {
-  font-size: 14px;
+  font-size: 13px;
   color: #4b5563;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.time-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-icon {
+  width: 12px;
+  height: 12px;
+  color: #9ca3af;
 }
 
 .time {
@@ -250,18 +311,34 @@ onMounted(() => {
   color: #9ca3af;
 }
 
-.tools button {
-  background: none;
-  border: none;
-  color: #6366f1;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 12px;
-  transition: color 0.2s;
+.tools {
+  display: flex;
+  gap: 8px;
 }
 
-.tools button:hover {
-  color: #4338ca;
+.tool-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tool-btn.danger {
+  color: #ef4444;
+}
+
+.tool-btn.danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .loading,
@@ -269,7 +346,7 @@ onMounted(() => {
   text-align: center;
   padding: 40px 0;
   color: #94a3b8;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .pagination button {
@@ -277,7 +354,7 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   color: #4b5563;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .pagination button:disabled {
@@ -286,7 +363,7 @@ onMounted(() => {
 }
 
 .pagination-wrapper {
-  margin-top: 32px;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
 }
@@ -296,30 +373,30 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 60px 20px;
   text-align: center;
   color: #94a3b8;
   background-color: #fff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px dashed #e2e8f0;
   transition: 0.3s ease;
 }
 
 .empty-image {
-  width: 120px;
-  margin-bottom: 16px;
+  width: 100px;
+  margin-bottom: 12px;
   opacity: 0.8;
 }
 
 .empty-title {
-  font-size: 20px;
-  color: #1e293b;
+  font-size: 18px;
+  color: #0f172a;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
 .empty-description {
-  font-size: 14px;
+  font-size: 13px;
   color: #64748b;
 }
 </style>

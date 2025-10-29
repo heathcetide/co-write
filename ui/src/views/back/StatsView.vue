@@ -1,5 +1,11 @@
 <template>
   <div class="stats-view">
+    <div class="header">
+      <BarChart3 class="icon" />
+      <h1 class="title">数据统计</h1>
+    </div>
+    <p class="subtitle">查看平台关键数据指标和趋势分析</p>
+    
     <div class="card-container">
       <div class="card">
         <div class="card-header">文档创建次数</div>
@@ -182,33 +188,62 @@
 
 <script setup>
 import WChart from '../../components/WChart.vue';
+import { BarChart3 } from 'lucide-vue-next';
 </script>
 
 <style scoped>
 .stats-view {
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   min-height: 100vh;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 24px;
 }
 
 .card-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 16px;
 }
 
 .card {
-  background-color: #fff;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
   overflow: hidden;
 }
 
 .card-header {
-  padding: 16px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #3A4A7E;
-  border-bottom: 1px solid #eee;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
 }
 
 .card-content {
@@ -216,15 +251,17 @@ import WChart from '../../components/WChart.vue';
 }
 
 .card-description {
-  font-size: 14px;
-  color: #666;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 12px;
 }
 
 .card-description p {
-  margin: 8px 0;
+  margin: 6px 0;
 }
 
 .card-description strong {
-  color: #3A4A7E;
+  color: #2563eb;
+  font-weight: 600;
 }
 </style>

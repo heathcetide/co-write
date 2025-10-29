@@ -4,6 +4,7 @@ import Avatar from '../../components/Avatar.vue'
 import Textarea from '../../components/Textarea.vue'
 import api from '../../api/index'
 import { useAuth } from '../../composables/useAuth'
+import { User, AtSign, FileText, Palette, MailCheck, Globe, Save, Edit3 } from 'lucide-vue-next'
 const { getUserInfo, setUserInfo } = useAuth()
 const userInfo = getUserInfo
 
@@ -75,7 +76,7 @@ const handleAvatarUpload = async (file: File) => {
         />
       </div>
       <div class="profile-info">
-        <h1 class="title">{{ editing ? '编辑个人资料' : '个人资料' }}</h1>
+        <h1 class="title"><User class="t-icon" /> {{ editing ? '编辑个人资料' : '个人资料' }}</h1>
         <p class="subtitle">在这里查看和编辑您的个人信息</p>
       </div>
     </div>
@@ -84,7 +85,7 @@ const handleAvatarUpload = async (file: File) => {
     <div class="profile-form">
       <!-- 用户名 -->
       <div class="form-group card">
-        <label for="username">用户名</label>
+        <label for="username"><AtSign class="l-icon" /> 用户名</label>
         <input
             v-if="editing"
             v-model="user.username"
@@ -97,14 +98,14 @@ const handleAvatarUpload = async (file: File) => {
 
       <!-- 邮箱 -->
       <div class="form-group card">
-        <label for="email">邮箱</label>
+        <label for="email"><MailCheck class="l-icon" /> 邮箱</label>
         <input disabled v-if="editing" v-model="user.email" id="email" type="email" placeholder="请输入邮箱" />
         <p v-else>{{ user.email }}</p>
       </div>
 
       <!-- 个人简介 -->
       <div class="form-group card">
-        <label for="bio">个人简介</label>
+        <label for="bio"><FileText class="l-icon" /> 个人简介</label>
         <Textarea
             v-if="editing"
             v-model="user.bio"
@@ -117,7 +118,7 @@ const handleAvatarUpload = async (file: File) => {
 
       <!-- 主题 -->
       <div class="form-group card">
-        <label>主题模式</label>
+        <label><Palette class="l-icon" /> 主题模式</label>
         <select v-if="editing" v-model="user.theme_dark">
           <option :value="0">浅色模式</option>
           <option :value="1">深色模式</option>
@@ -127,7 +128,7 @@ const handleAvatarUpload = async (file: File) => {
 
       <!-- 邮件通知设置 -->
       <div class="form-group card">
-        <label>邮件通知</label>
+        <label><MailCheck class="l-icon" /> 邮件通知</label>
         <select v-if="editing" v-model="user.email_notifications">
           <option :value="1">开启</option>
           <option :value="0">关闭</option>
@@ -137,7 +138,7 @@ const handleAvatarUpload = async (file: File) => {
 
       <!-- 语言 -->
       <div class="form-group card">
-        <label>语言</label>
+        <label><Globe class="l-icon" /> 语言</label>
         <select v-if="editing" v-model="user.language">
           <option :value="'EN'">英语</option>
           <option :value="'ZH'">中文</option>
@@ -148,17 +149,14 @@ const handleAvatarUpload = async (file: File) => {
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button v-if="editing" @click="saveChanges">保存</button>
-      <button @click="toggleEdit">{{ editing ? '取消' : '编辑' }}</button>
+      <button v-if="editing" class="primary" @click="saveChanges"><Save class="btn-icon" /> 保存</button>
+      <button class="secondary" @click="toggleEdit"><Edit3 class="btn-icon" /> {{ editing ? '取消' : '编辑' }}</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.profile-page {
-  padding: 32px;
-  background-color: #f9fafb;
-}
+.profile-page { padding: 24px; background-color: #ffffff; }
 
 /* Profile Header */
 .profile-header {
@@ -179,73 +177,39 @@ const handleAvatarUpload = async (file: File) => {
   flex-grow: 1;
 }
 
-.title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #1e293b;
-}
+.title { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #0f172a; }
+.t-icon { width: 18px; height: 18px; color: #2563eb; margin-right: 8px; vertical-align: -3px; }
 
-.subtitle {
-  font-size: 16px;
-  color: #64748b;
-  margin-bottom: 24px;
-}
+.subtitle { font-size: 13px; color: #64748b; margin-bottom: 12px; }
 
 .profile-form {
   margin-bottom: 20px;
 }
 
 /* Card style for each form field */
-.card {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-}
+.card { background: #ffffff; padding: 14px; border-radius: 10px; border: 1px solid #e5e7eb; box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04); margin-bottom: 14px; }
 
 .form-group {
   margin-bottom: 20px;
 }
 
-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 8px;
-}
+label { font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #0f172a; }
+.l-icon { width: 16px; height: 16px; color: #2563eb; }
 
 input,
 textarea,
-select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
+select { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; color: #0f172a; }
 
 textarea {
   min-height: 100px;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 20px;
-}
+.action-buttons { display: flex; gap: 10px; }
 
-button {
-  padding: 10px 20px;
-  border: none;
-  background-color: #3b82f6;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #2563eb;
-}
+button { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+button .btn-icon { width: 16px; height: 16px; }
+button.primary { background-color: #2563eb; color: #ffffff; }
+button.primary:hover { background-color: #1d4ed8; }
+button.secondary { background-color: #f8fafc; color: #0f172a; border: 1px solid #e5e7eb; }
+button.secondary:hover { background-color: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
 </style>

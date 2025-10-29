@@ -1,5 +1,11 @@
 <template>
   <div class="plugin-management">
+    <div class="header">
+      <Bot class="icon" />
+      <h1 class="title">AI 插件管理</h1>
+    </div>
+    <p class="subtitle">管理和配置 AI 插件，扩展平台功能</p>
+    
     <!-- 搜索与分类 -->
     <div class="filters">
       <Input
@@ -13,7 +19,10 @@
           :options="formattedCategoriesOptions"
           placeholder="选择分类"
       />
-      <button class="btn open-store-btn" @click="openStore">打开插件商店</button>
+      <button class="btn open-store-btn" @click="openStore">
+        <Store class="btn-icon" />
+        打开插件商店
+      </button>
     </div>
 
     <!-- 插件商店弹窗 -->
@@ -29,7 +38,10 @@
           >
             <div class="plugin-card-header">
               <h3>{{ plugin.pluginName }}</h3>
-              <button class="btn install-btn" @click.stop="installPlugin(plugin)">安装</button>
+              <button class="btn install-btn" @click.stop="installPlugin(plugin)">
+              <Download class="btn-icon" />
+              安装
+            </button>
             </div>
             <p>{{ plugin.pluginType }} - {{ plugin.version }}</p>
           </div>
@@ -46,7 +58,10 @@
             @update:page="updateStorePage"
             @update:pageSize="updateStorePageSize"
         />
-        <button class="btn close-btn" @click="closeStore">关闭商店</button>
+        <button class="btn close-btn" @click="closeStore">
+          <X class="btn-icon" />
+          关闭商店
+        </button>
       </div>
     </div>
 
@@ -59,7 +74,10 @@
         <p v-if="currentPlugin.webhookUrl">
           Webhook URL: <a :href="currentPlugin.webhookUrl" target="_blank">{{ currentPlugin.webhookUrl }}</a>
         </p>
-        <button class="btn close-btn" @click="closePluginDetails">关闭</button>
+        <button class="btn close-btn" @click="closePluginDetails">
+          <X class="btn-icon" />
+          关闭
+        </button>
       </div>
     </div>
   </div>
@@ -71,6 +89,7 @@ import api from '../../api'; // 引入接口方法
 import Pagination from '../../components/Pagination.vue';
 import Input from '../../components/Input.vue';
 import Select from '../../components/Select.vue';
+import { Bot, Store, Download, X } from 'lucide-vue-next';
 
 const categories = ['支付', '分析', 'SEO', '安全', '图像处理'];
 
@@ -172,97 +191,135 @@ const installPlugin = async (plugin: Plugin) => {
 
 <style scoped>
 .plugin-management {
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-  height: 95%;
+  padding: 24px;
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
 }
 
 .title {
-  font-size: 36px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 40px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 24px;
 }
 
 .filters {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   justify-content: space-between;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
+  align-items: center;
 }
 
 .filter-input {
   width: 48%;
-  max-width: 350px;
+  max-width: 300px;
 }
 
 .open-store-btn {
-  background-color: #06b6d4;
-  color: #fff;
-  padding: 12px 20px;
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 8px 12px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .open-store-btn:hover {
-  background-color: #00a0b2;
+  background-color: #1d4ed8;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .section-title {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  color: #0f172a;
 }
 
 .plugin-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .plugin-card {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 20px;
-  transition: transform 0.3s, box-shadow 0.3s;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.2s;
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
 }
 
 .plugin-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #bfdbfe;
 }
 
 .plugin-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .plugin-card h3 {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .plugin-card p {
-  font-size: 14px;
-  color: #a1b1cc;
+  font-size: 13px;
+  color: #64748b;
 }
 
 .plugin-card button {
-  padding: 10px 15px;
+  padding: 6px 10px;
   border-radius: 8px;
-  background-color: #06b6d4;
-  color: #fff;
+  background-color: #2563eb;
+  color: #ffffff;
   border: none;
   cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
 }
 
 .plugin-card button:hover {
-  background-color: #00a0b2;
+  background-color: #1d4ed8;
 }
 /* 限制插件商店和插件详情弹窗的最大高度 */
 .store-popup, .plugin-details-popup {
@@ -270,39 +327,48 @@ const installPlugin = async (plugin: Plugin) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #fff;
-  color: #1b2a41;
-  padding: 40px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 24px;
   border-radius: 10px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
   max-width: 800px;
   width: 100%;
-  max-height: 80vh; /* 最大高度为 80% 的视口高度 */
-  overflow-y: auto; /* 超出内容时启用垂直滚动条 */
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 /* 如果需要进一步限制内容区域的最大高度，也可以设置 */
 .plugin-list {
-  max-height: 60vh; /* 设置插件列表最大高度为 60% 的视口高度 */
-  overflow-y: auto; /* 启用滚动条 */
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 /* 样式保持不变，其它部分 */
 .store-popup h2, .plugin-details-popup h2 {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
 }
 
 .close-btn {
-  background-color: #ff5c5c;
-  color: #fff;
-  padding: 12px 20px;
+  background-color: #ef4444;
+  color: #ffffff;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
+  border: none;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background-color: #ff2b2b;
+  background-color: #dc2626;
 }
 
 </style>

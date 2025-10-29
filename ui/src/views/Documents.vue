@@ -6,14 +6,14 @@
         <button class="action-btn" @click="createDocument">
           <i class="iconfont icon-file-add"></i>
           <div class="btn-content">
-            <span class="btn-title">📄 新建文档</span>
+            <span class="btn-title"><FileText class="lucide-icon" /> 新建文档</span>
             <span class="btn-desc">文档、表格、画板、数据表</span>
           </div>
         </button>
         <button class="action-btn" @click="createRepo">
           <i class="iconfont icon-repo-add"></i>
           <div class="btn-content">
-            <span class="btn-title">📚 新建知识库</span>
+            <span class="btn-title"><BookOpen class="lucide-icon" /> 新建知识库</span>
             <span class="btn-desc">使用知识库整理知识</span>
           </div>
         </button>
@@ -22,14 +22,14 @@
         <button class="action-btn" @click="openTemplates">
           <i class="iconfont icon-template"></i>
           <div class="btn-content">
-            <span class="btn-title">🎨 模板中心</span>
+            <span class="btn-title"><Palette class="lucide-icon" /> 模板中心</span>
             <span class="btn-desc">从模板中获取灵感</span>
           </div>
         </button>
         <button class="action-btn" @click="useAI">
           <i class="iconfont icon-ai"></i>
           <div class="btn-content">
-            <span class="btn-title">🤖 AI帮你写</span>
+            <span class="btn-title"><Bot class="lucide-icon" /> AI帮你写</span>
             <span class="btn-desc">AI助手帮你一键生成文档</span>
           </div>
         </button>
@@ -80,7 +80,7 @@
     <div class="feature-section combined">
       <button class="feature-btn" @click="openFeature">
         <i class="iconfont icon-magic"></i>
-        <span>🎙️ 试试新建~ </span>
+        <span><Wand2 class="lucide-icon" /> 试试新建~ </span>
       </button>
       <div class="user-info-combined">
         <img class="user-avatar" :src="userInfo?.avatarUrl" />
@@ -94,6 +94,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
+import { FileText, BookOpen, Palette, Bot, Wand2 } from 'lucide-vue-next'
 
 // -----------------------
 // 认证状态（用户信息）
@@ -182,10 +183,10 @@ const openFeature = () => {
 
 <style scoped>
 .yuque-documents {
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 24px;
-  color: #1a1a1a;
+  padding: 20px 24px;
+  color: #0f172a;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -204,22 +205,21 @@ const openFeature = () => {
 .action-btn {
   display: flex;
   align-items: center;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+  border: 1px solid #e5e7eb;
   text-align: left;
   width: 100%;
-  background-color: #f3eeff;
-  color: #6a3dc8;
-  border: 1px solid #e8e0f5;
+  background-color: #ffffff;
+  color: #0f172a;
 }
 .action-btn i {
-  font-size: 24px;
-  margin-right: 16px;
+  font-size: 20px;
+  margin-right: 12px;
   flex-shrink: 0;
-  color: #6a3dc8;
+  color: #2563eb;
 }
 .btn-content {
   display: flex;
@@ -227,22 +227,22 @@ const openFeature = () => {
 }
 .btn-title {
   font-weight: 600;
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-size: 15px;
+  margin-bottom: 2px;
 }
 .btn-desc {
-  font-size: 13px;
-  opacity: 0.8;
+  font-size: 12px;
+  color: #64748b;
 }
 .action-btn:hover {
-  background-color: #e8e0f5;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(106, 61, 200, 0.1);
+  background-color: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(2, 6, 23, 0.06);
 }
 .action-btn:active {
-  background-color: #d4c6f2;
+  background-color: #eef2ff;
   transform: translateY(0);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(2, 6, 23, 0.06);
 }
 
 /* 核心区域：分类标签 + 筛选按钮 */
@@ -250,8 +250,8 @@ const openFeature = () => {
   display: flex;
   align-items: center; /* 垂直居中，避免高度差 */
   flex-wrap: nowrap;   /* 禁止换行！确保永远同行 */
-  gap: 20px;           /* 按钮组间距 */
-  margin-bottom: 24px;
+  gap: 16px;           /* 按钮组间距 */
+  margin-bottom: 20px;
 }
 
 /* 如果筛选按钮有下沉问题，补充： */
@@ -265,42 +265,42 @@ const openFeature = () => {
   min-width: 0; /* 允许内容收缩 */
 }
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 16px;
-  color: #1a1a1a;
+  margin-bottom: 12px;
+  color: #0f172a;
 }
 .tag-group {
   display: flex;
-  gap: 16px; /* 增大分类按钮间距（原12px） */
+  gap: 12px; /* 增大分类按钮间距（原12px） */
   flex-wrap: wrap; /* 防止极端宽度下拥挤 */
 }
 .doc-tag {
-  padding: 9px 18px; /* 增大按钮内边距（原8px 16px） */
-  border-radius: 16px;
-  background: white;
-  border: 1px solid #f0f0f0;
-  color: #646464;
+  padding: 8px 14px; /* 精简内边距 */
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #475569;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap; /* 防止文字换行 */
 }
 .doc-tag:hover {
-  background: #f3eeff;
-  color: #6a3dc8;
-  border-color: #e8e0f5;
+  background: #f8fafc;
+  color: #2563eb;
+  border-color: #dbeafe;
 }
 .doc-tag.active {
-  background: #6a3dc8;
-  color: white;
-  border-color: #6a3dc8;
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
 
 /* 筛选区（核心修复） */
 .filter-section {
   display: flex;
-  gap: 16px; /* 增大筛选按钮间距（原12px） */
+  gap: 12px; /* 筛选按钮间距 */
   align-items: center;
   /* 移除原padding-top: 38px，让筛选区与分类区顶部对齐 */
   min-width: 0;
@@ -311,25 +311,25 @@ const openFeature = () => {
 .filter-btn {
   display: flex;
   align-items: center;
-  gap: 6px; /* 增大按钮内部图标与文字间距（原4px） */
-  padding: 9px 14px; /* 增大按钮内边距（原8px 12px） */
-  border-radius: 6px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  color: #555;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #475569;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
 }
 .filter-btn:hover {
-  border-color: #c0b1e0;
-  color: #6a3dc8;
+  border-color: #dbeafe;
+  color: #2563eb;
 }
 .filter-btn.active {
-  background: #f3eeff;
-  color: #6a3dc8;
-  border-color: #d4c6f2;
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
 .filter-btn i {
   font-size: 12px;
@@ -344,22 +344,22 @@ const openFeature = () => {
   left: 0;
   width: 160px;
   background: white;
-  border: 1px solid #e8e0f5;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(106, 61, 200, 0.1);
+  box-shadow: 0 8px 16px rgba(2, 6, 23, 0.06);
   z-index: 10;
   margin-top: 4px;
   overflow: hidden;
 }
 .dropdown-item {
-  padding: 8px 12px;
+  padding: 8px 10px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 14px;
 }
 .dropdown-item:hover {
-  background-color: #f3eeff;
-  color: #6a3dc8;
+  background-color: #f8fafc;
+  color: #2563eb;
 }
 
 /* 特色功能区（保持不变） */
@@ -367,16 +367,16 @@ const openFeature = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 24px 0;
-  padding: 12px 0;
+  margin: 20px 0;
+  padding: 10px 0;
 }
 .feature-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  color: #6a3dc8;
-  font-size: 15px;
+  padding: 6px 10px;
+  color: #2563eb;
+  font-size: 14px;
   cursor: pointer;
   background: none;
   border: none;
@@ -384,10 +384,10 @@ const openFeature = () => {
   border-radius: 6px;
 }
 .feature-btn:hover {
-  background-color: #f3eeff;
+  background-color: #eff6ff;
 }
 .feature-btn:active {
-  background-color: #e8e0f5;
+  background-color: #dbeafe;
 }
 .feature-btn i {
   font-size: 18px;
@@ -406,7 +406,16 @@ const openFeature = () => {
   object-fit: cover;
 }
 .date-info {
-  color: #888;
+  color: #94a3b8;
   margin-left: 12px;
+}
+
+/* lucide 图标在按钮标题内的统一尺寸与对齐 */
+.lucide-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  color: #2563eb;
 }
 </style>

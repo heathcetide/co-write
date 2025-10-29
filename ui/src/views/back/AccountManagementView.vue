@@ -6,7 +6,9 @@ import {
   ShieldCheck,
   ShieldX,
   Lock,
-  Ban
+  Ban,
+  User,
+  Monitor
 } from 'lucide-vue-next'
 
 // 模拟登录记录数据
@@ -52,13 +54,18 @@ const blockIp = (id: number) => {
 
 <template>
   <div class="device-view">
-    <h1 class="title">账号登录设备</h1>
+    <div class="header">
+      <User class="icon" />
+      <h1 class="title">账号登录设备</h1>
+    </div>
     <p class="subtitle">您可查看最近的登录行为，并对可疑 IP 进行封禁。</p>
 
     <div class="device-list">
       <div class="device-card" v-for="record in loginRecords" :key="record.id">
         <div class="left">
-          <Laptop class="device-icon" />
+          <div class="device-icon-wrapper">
+            <Monitor class="device-icon" />
+          </div>
           <div class="info">
             <div class="device-name">{{ record.device }}</div>
             <div class="meta">
@@ -97,58 +104,79 @@ const blockIp = (id: number) => {
 
 <style scoped>
 .device-view {
-  padding: 32px;
-  background-color: #f9fafb;
+  padding: 24px;
+  background-color: #ffffff;
   font-family: system-ui, sans-serif;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+}
+
 .title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 6px;
+  color: #0f172a;
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: 13px;
   color: #64748b;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .device-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .device-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 18px 22px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: box-shadow 0.2s;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04);
+  transition: all 0.2s;
 }
 
 .device-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .left {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
+}
+
+.device-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .device-icon {
-  width: 28px;
-  height: 28px;
-  color: #4f46e5;
-  flex-shrink: 0;
-  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
 }
 
 .info {
@@ -157,7 +185,7 @@ const blockIp = (id: number) => {
 }
 
 .device-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
   margin-bottom: 4px;
@@ -172,8 +200,8 @@ const blockIp = (id: number) => {
 }
 
 .meta-icon {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   color: #9ca3af;
 }
 
@@ -195,12 +223,12 @@ const blockIp = (id: number) => {
   display: flex;
   align-items: center;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .status-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   margin-right: 4px;
 }
 
@@ -213,11 +241,11 @@ const blockIp = (id: number) => {
 }
 
 .block-btn {
-  background-color: #f3f4f6;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
   color: #374151;
   display: flex;
   align-items: center;
@@ -227,17 +255,20 @@ const blockIp = (id: number) => {
 }
 
 .block-btn:hover {
-  background-color: #e5e7eb;
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
 }
 
 .block-btn:disabled {
   background-color: #f1f5f9;
   color: #9ca3af;
   cursor: not-allowed;
+  border-color: #e5e7eb;
 }
 
 .btn-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 </style>

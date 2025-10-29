@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import api from '../../api/index';
-import { ClipboardList, AlertTriangle } from 'lucide-vue-next';
+import { ClipboardList, AlertTriangle, CheckCircle } from 'lucide-vue-next';
 import dayjs from 'dayjs';
 
 const formatTime = (timestamp: string | Date) => {
@@ -60,7 +60,7 @@ onMounted(() => {
         <div class="status" :class="log.success ? 'status-success' : 'status-fail'">
           <template v-if="log.success">
             <span class="status-badge">
-              ✅ 成功
+              <CheckCircle class="status-icon" /> 成功
             </span>
           </template>
           <template v-else>
@@ -76,34 +76,34 @@ onMounted(() => {
 
 <style scoped>
 .log-view {
-  padding: 32px;
-  background-color: #f9fafb;
+  padding: 24px;
+  background-color: #ffffff;
   font-family: system-ui, sans-serif;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .icon {
-  width: 22px;
-  height: 22px;
-  color: #5e4dcd;
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
 }
 
 .title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   color: #1e293b;
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: 13px;
   color: #64748b;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .loading {
@@ -144,10 +144,10 @@ onMounted(() => {
 }
 
 .log-item {
-  background-color: #fff;
+  background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 16px 20px;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -165,9 +165,9 @@ onMounted(() => {
 }
 
 .badge {
-  font-size: 13px;
-  color: #6366f1;
-  background: #eef2ff;
+  font-size: 12px;
+  color: #2563eb;
+  background: #eff6ff;
   padding: 4px 10px;
   border-radius: 9999px;
   font-weight: 500;
@@ -175,11 +175,11 @@ onMounted(() => {
 
 .timestamp {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .description {
-  font-size: 14px;
+  font-size: 13px;
   color: #334155;
 }
 .status {
@@ -193,7 +193,7 @@ onMounted(() => {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 9999px;
   font-weight: 500;
 }

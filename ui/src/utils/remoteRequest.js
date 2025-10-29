@@ -71,7 +71,11 @@ instance.interceptors.response.use(
     error => {
         if (error.response) {
             const status = error.response.status;
-            if (status === 404) {
+            if (status === 401) {
+                notify.error('认证已失效，请重新登录');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            } else if (status === 404) {
                 notify.error('请求的资源未找到');
             } else if (status === 500) {
                 notify.error('服务器内部错误，请稍后再试');

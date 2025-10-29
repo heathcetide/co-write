@@ -110,7 +110,11 @@ const route = useRoute()
 const collapsed = ref(false)
 
 function isActive(path: string) {
-  return route.path.startsWith(path) || route.name === path
+  // 避免根项 '/back/' 误判为所有子路由选中
+  if (path === '/back/' || path === '/back') {
+    return route.path === '/back' || route.path === '/back/'
+  }
+  return route.path.startsWith(path)
 }
 
 function navigate(path: string) {

@@ -27,9 +27,9 @@ const spec = {
 
 onMounted(() => {
   vegaEmbed(vegaContainer.value, spec, { actions: false })
-      .then(() => console.log('✅ Vega 图成功渲染'))
+      .then(() => console.log('Vega 图成功渲染'))
       .catch(err => {
-        console.error('❌ Vega 渲染失败:', err)
+        console.error('Vega 渲染失败:', err)
       })
 })
 </script>

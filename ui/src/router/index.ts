@@ -17,6 +17,7 @@ import { useAuth } from '../composables/useAuth'
 import Drawio from "../views/Drawio.vue";
 import AIChat from "../views/AIChat.vue";
 import OrganizationManagement from "../views/back/OrganizationManagement.vue";
+import NotFound from "../views/NotFound.vue";
 // import OrganizationManagement from "../views/back/OrganizationManagement.vue";
 
 
@@ -113,6 +114,14 @@ const routes = [
     children: [
 
     ]
+  }
+  ,
+  // 404 兜底路由（必须放最后）
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+    meta: { requiresAuth: false }
   }
 ];
 

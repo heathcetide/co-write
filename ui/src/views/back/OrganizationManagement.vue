@@ -43,7 +43,7 @@
             <div class="team-meta">
               <div class="team-name">{{ team.name }}</div>
               <div class="team-desc">{{ team.description }}</div>
-              <div class="member-count">👥 成员：{{ team.currentMembers }}</div>
+              <div class="member-count"><Users class="inline-icon" /> 成员：{{ team.currentMembers }}</div>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@
         <!-- 成员角色选择 -->
         <div class="form-group">
           <div class="select-wrapper">
-            <span class="emoji-icon">🙋</span>
+            <UserPlus class="input-icon" />
             <select class="role-select" v-model="selectedRole">
               <option value="OWNER">OWNER</option>
               <option value="ADMIN">ADMIN</option>
@@ -76,7 +76,7 @@
         <!-- 最大使用次数 -->
         <div class="form-group">
           <div class="input-wrapper">
-            <span class="emoji-icon">🔢</span>
+            <Hash class="input-icon" />
             <input
                 class="input"
                 type="number"
@@ -90,7 +90,7 @@
         <!-- 截止日期 -->
         <div class="form-group">
           <div class="input-wrapper">
-            <span class="emoji-icon">⏰</span>
+            <Clock class="input-icon" />
             <input
                 class="input"
                 type="datetime-local"
@@ -154,6 +154,7 @@ import dayjs from "dayjs";
 import QrcodeVue from 'qrcode.vue';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Users, UserPlus, Hash, Clock } from 'lucide-vue-next'
 
 
 const router = useRouter()
@@ -387,14 +388,14 @@ const closeModal = () => {
   display: flex;
   align-items: center;
   font-size: 14px;
-  padding: 0.6em 1.2em;
+  padding: 0.5em 1.1em;
   color: white;
-  background: linear-gradient(90deg, #7e68ff, #c3baff);
+  background: #2563eb;
   border: none;
   border-radius: 999em;
-  box-shadow: 0 0.6em 1.5em -0.4em rgba(126, 104, 255, 0.6);
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.08);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .gradient-button svg {
   margin-right: 6px;
@@ -416,7 +417,7 @@ const closeModal = () => {
   width: 340px;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(124, 100, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.06);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -425,7 +426,7 @@ const closeModal = () => {
 }
 .team-card:hover {
   transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 16px 32px rgba(124, 100, 255, 0.2);
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.12);
 }
 
 .card-header {
@@ -478,8 +479,8 @@ const closeModal = () => {
   border-radius: 50px;
   cursor: pointer;
   border: 0;
-  background-color: #f0ebff;
-  color: #4e3ca9;
+  background-color: #eff6ff;
+  color: #1d4ed8;
   box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -491,21 +492,21 @@ const closeModal = () => {
 
 .invite:hover {
   letter-spacing: 2px;
-  background-color: #7e68ff;
+  background-color: #2563eb;
   color: white;
-  box-shadow: rgba(126, 104, 255, 0.4) 7px 29px ;
+  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
 }
 .learn:hover {
   letter-spacing: 2px;
-  background-color: #a282f9;
+  background-color: #1d4ed8;
   color: white;
-  box-shadow: rgba(145, 110, 255, 0.4) 7px 29px ;
+  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
 }
 .manage:hover {
   letter-spacing: 2px;
-  background-color: #c3baff;
-  color: #3e2c8c;
-  box-shadow: rgba(176, 160, 255, 0.4) 7px 29px ;
+  background-color: #93c5fd;
+  color: #1d4ed8;
+  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
 }
 
 .new-action-btn:active {

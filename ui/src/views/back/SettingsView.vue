@@ -76,12 +76,7 @@ const changeLanguage = (e: Event) => {
 </template>
 
 <style scoped>
-.settings-view {
-  padding: 32px;
-  background-color: #f9fafb;
-  min-height: 100%;
-  font-family: system-ui, sans-serif;
-}
+.settings-view { padding: 24px; background-color: #ffffff; min-height: 100%; font-family: system-ui, sans-serif; }
 
 .header {
   display: flex;
@@ -90,23 +85,11 @@ const changeLanguage = (e: Event) => {
   margin-bottom: 10px;
 }
 
-.icon {
-  width: 22px;
-  height: 22px;
-  color: #5e4dcd;
-}
+.icon { width: 20px; height: 20px; color: #2563eb; }
 
-.title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #1e293b;
-}
+.title { font-size: 22px; font-weight: 700; color: #0f172a; }
 
-.subtitle {
-  font-size: 15px;
-  color: #64748b;
-  margin-bottom: 24px;
-}
+.subtitle { font-size: 13px; color: #64748b; margin-bottom: 16px; }
 
 .setting-section {
   display: flex;
@@ -114,52 +97,14 @@ const changeLanguage = (e: Event) => {
   gap: 20px;
 }
 
-.setting-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
+.setting-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 
-.setting-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: #eef2ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.setting-icon { width: 38px; height: 38px; border-radius: 9999px; background: #eff6ff; display: flex; align-items: center; justify-content: center; }
 
-.setting-info h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0f172a;
-  margin-bottom: 4px;
-}
+.setting-info h3 { font-size: 15px; font-weight: 600; color: #0f172a; margin-bottom: 2px; }
 
-.setting-info p {
-  font-size: 14px;
-  color: #64748b;
-}
+.setting-info p { font-size: 13px; color: #64748b; }
 
-button,
-select {
-  background: #5e4dcd;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-button:hover,
-select:hover {
-  background: #4c3cad;
-}
+button, select { background: #2563eb; color: #ffffff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; font-size: 13px; }
+button:hover, select:hover { background: #1d4ed8; }
 </style>
