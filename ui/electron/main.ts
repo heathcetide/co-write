@@ -7,7 +7,7 @@ import { spawn, ChildProcess } from 'child_process'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'] || 'http://localhost:3000'
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 const APP_ROOT = path.join(__dirname, '..')
 // const MAIN_DIST = path.join(APP_ROOT, 'dist-electron')
 const RENDERER_DIST = path.join(APP_ROOT, 'dist')

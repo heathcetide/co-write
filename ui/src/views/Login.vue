@@ -1,5 +1,6 @@
 <template>
-  <div class="login-wrapper" :style="{ backgroundImage: `url(${bgImage})` }">
+  <div class="login-wrapper">
+    <canvas ref="bgCanvas" class="bg-canvas"></canvas>
     <transition name="fade">
       <div class="login-card" key="card">
         <h1 class="logo">CoWrite</h1>
@@ -87,9 +88,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import bgImage from '../assets/login_background.png'
 import {
   MailIcon,
   UserIcon,
@@ -109,6 +109,82 @@ const password = ref('')
 const loading = ref(false)
 const codeCooldown = ref(0)
 let timer: any = null
+
+const bgCanvas = ref<HTMLCanvasElement | null>(null)
+let rafId = 0 as number
+let particles: { x: number; y: number; r: number; vx: number; vy: number; color: string }[] = []
+
+const initBackground = () => {
+  const canvas = bgCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  const resize = () => {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  }
+  resize()
+
+  // 生成柔和渐变气泡
+  const colors = ['#e0f2fe', '#e9d5ff', '#dbeafe', '#ffe4e6']
+  const count = Math.min(24, Math.floor((canvas.width * canvas.height) / 90000))
+  particles = Array.from({ length: count }).map(() => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: 40 + Math.random() * 80,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }))
+
+  const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    // 背景渐变
+    const grd = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+    grd.addColorStop(0, '#ffffff')
+    grd.addColorStop(1, '#f6f7fb')
+    ctx.fillStyle = grd
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    particles.forEach(p => {
+      p.x += p.vx
+      p.y += p.vy
+      if (p.x - p.r < 0 || p.x + p.r > canvas.width) p.vx *= -1
+      if (p.y - p.r < 0 || p.y + p.r > canvas.height) p.vy *= -1
+
+      const radial = ctx.createRadialGradient(p.x, p.y, p.r * 0.2, p.x, p.y, p.r)
+      radial.addColorStop(0, p.color)
+      radial.addColorStop(1, 'rgba(255,255,255,0.6)')
+      ctx.fillStyle = radial
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+      ctx.fill()
+    })
+
+    rafId = requestAnimationFrame(draw)
+  }
+
+  const onResize = () => {
+    resize()
+  }
+  window.addEventListener('resize', onResize)
+
+  draw()
+
+  return () => {
+    cancelAnimationFrame(rafId)
+    window.removeEventListener('resize', onResize)
+  }
+}
+
+onMounted(() => {
+  const cleanup = initBackground()
+  // 存在时在卸载清理
+  onUnmounted(() => {
+    if (cleanup) cleanup()
+  })
+})
 
 const switchMode = (m: 'email' | 'account') => {
   mode.value = m
@@ -249,21 +325,32 @@ const onForgotPassword = () => {
 <style scoped>
 .login-wrapper {
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.login-card {
-  background: rgba(255, 255, 255, 0.92);
-  padding: 2.5rem;
-  border-radius: 16px;
+.bg-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 400px;
+  height: 100%;
+  z-index: 0;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 2.2rem;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 420px;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(16, 24, 40, 0.12);
   animation: scaleIn 0.4s ease;
 }
 
@@ -273,10 +360,10 @@ const onForgotPassword = () => {
 }
 
 .logo {
-  font-size: 32px;
-  font-weight: bold;
-  color: #0ee2e9;
-  margin-bottom: 1rem;
+  font-size: 30px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.2rem;
 }
 
 .tab-selector {
@@ -302,7 +389,7 @@ const onForgotPassword = () => {
 }
 
 .tab-selector button.active {
-  background-color: #0ee2e9;
+  background-color: #0ea5e9;
   color: white;
 }
 
@@ -319,14 +406,15 @@ const onForgotPassword = () => {
 input {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #bbb;
-  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   font-size: 14px;
   transition: border 0.3s ease;
 }
 
 input:focus {
   border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
   outline: none;
 }
 
@@ -384,7 +472,7 @@ input:focus {
   font-size: 16px;
   font-weight: bold;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -404,7 +492,7 @@ input:focus {
   color: white;
   font-size: 15px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
   justify-content: center;

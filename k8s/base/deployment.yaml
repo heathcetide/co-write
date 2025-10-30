@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: foodrecord
+  name: cowrite
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: foodrecord
+      app: cowrite
   template:
     metadata:
       labels:
-        app: foodrecord
+        app: cowrite
     spec:
       containers:
-        - name: foodrecord
-          image: your-registry.com/foodrecord:latest
+        - name: cowrite
+          image: your-registry.com/cowrite:latest
           ports:
             - containerPort: 8080
           resources:
@@ -40,10 +40,10 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
-                  name: foodrecord-config
+                  name: cowrite-config
                   key: profile
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: foodrecord-secrets
-                  key: db-password 
+                  name: cowrite-secrets
+                  key: db-password
