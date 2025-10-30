@@ -42,7 +42,6 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
      * 获取当前用户通知列表
      */
     @Override
-    @Loggable(type = LogType.SYSTEM_MESSAGE, value = "获取当前用户通知列表")
     public IPage<Notification> getNotificationsByUserIdPaged(Long userId, int page, int size, NotificationType type) {
         QueryWrapper<Notification> query = new QueryWrapper<Notification>()
                 .eq("user_id", userId)
@@ -57,7 +56,6 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
      * 获取当前用户未读通知数量
      */
     @Override
-    @Loggable(type = LogType.SYSTEM_MESSAGE, value = "获取当前用户未读通知数量")
     public long countUnreadByUserId(Long userId) {
         return count(new QueryWrapper<Notification>()
                 .eq("user_id", userId)
@@ -117,7 +115,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
      * 清空所有通知
      */
     @Override
-    @Loggable(type = LogType.SYSTEM_MESSAGE, value = "获取当前用户通知列表")
+    @Loggable(type = LogType.SYSTEM_MESSAGE, value = "清空通知")
     public void clearAllByUserId(Long userId) {
         remove(new QueryWrapper<Notification>()
                 .eq("user_id", userId)

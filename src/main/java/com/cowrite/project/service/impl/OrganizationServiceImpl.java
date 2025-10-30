@@ -39,7 +39,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
      * 用户获取已参与的组织
      */
     @Override
-    @Loggable(type = LogType.ORG_MODULE, value = "用户获取组织")
     public List<Organization> getOrganizationsByUser(User currentUser) {
         return super.list(new LambdaQueryWrapper<Organization>().in(
                 Organization::getId,
@@ -56,7 +55,6 @@ public class OrganizationServiceImpl extends ServiceImpl<OrganizationMapper, Org
      * 获取组织成员列表
      */
     @Override
-    @Loggable(type = LogType.ORG_MODULE, value = "获取组织成员列表")
     public List<User> getMembersByOrganizationId(Long organizationId) {
         List<Long> userIds = organizationMemberMapper.selectList(
                         new LambdaQueryWrapper<OrganizationMember>()

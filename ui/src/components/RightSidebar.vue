@@ -2,8 +2,8 @@
   <aside class="right-sidebar" :class="{ collapsed }">
     <!-- 折叠按钮 -->
     <div class="collapse-trigger" @click="emit('toggle')">
-<!--      <IconMdiChevronLeft v-if="collapsed" />-->
-<!--      <IconMdiChevronRight v-else />-->
+      <ChevronRight v-if="collapsed" class="collapse-icon" />
+      <ChevronLeft v-else class="collapse-icon" />
     </div>
 
     <!-- 展开时内容区域 -->
@@ -35,6 +35,7 @@
 import { defineProps, defineEmits, ref, watch } from 'vue'
 import NestedOutlineEditor from '../components/NestedOutlineEditor.vue'
 import api from '../api/index'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 interface DocumentItem {
   id: string
@@ -94,7 +95,6 @@ const createTopLevel = async () => {
 .right-sidebar {
   position: relative;
   width: 280px;
-  background-color: #f8f5ff; /* 淡紫色背景 */
   padding: 1.5rem;
   transition: all 0.3s ease;
   overflow-y: auto;
@@ -124,6 +124,12 @@ const createTopLevel = async () => {
   z-index: 10;
   border: 1px solid #e8e0f5;
   transition: all 0.2s ease;
+}
+
+.collapse-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
 }
 
 .collapse-trigger:hover {

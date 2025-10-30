@@ -1,8 +1,6 @@
 package com.cowrite.project.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cowrite.project.common.anno.Loggable;
-import com.cowrite.project.common.enums.LogType;
 import com.cowrite.project.model.dto.document.CreateDocumentShareLinkRequest;
 import com.cowrite.project.model.entity.DocumentShare;
 import com.cowrite.project.model.entity.OrganizationInvite;
@@ -22,7 +20,6 @@ public interface DocumentShareService extends IService<DocumentShare> {
      * @return 邀请码封装好后的VO
      */
     @SignalEmitter("invite.create")
-    @Loggable(type = LogType.CONFIGURATION, value = "创建邀请码")
     InviteResponseVO createShareLink(Long id, CreateDocumentShareLinkRequest request);
 
 
@@ -31,7 +28,6 @@ public interface DocumentShareService extends IService<DocumentShare> {
      * @param code 邀请码
      * @return 邀请信息
      */
-    @Loggable(type = LogType.CONFIGURATION, value = "获取邀请信息")
     DocumentShare getByCode(String code);
 
     /**
@@ -39,7 +35,6 @@ public interface DocumentShareService extends IService<DocumentShare> {
      * @param code 邀请码
      * @return 邀请信息
      */
-    @Loggable(type = LogType.CONFIGURATION, value = "验证邀请码")
     public DocumentShareVO validateInviteCode(String code);
 
 

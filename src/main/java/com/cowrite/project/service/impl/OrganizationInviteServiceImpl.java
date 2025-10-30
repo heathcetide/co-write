@@ -1,4 +1,6 @@
 package com.cowrite.project.service.impl;
+import com.cowrite.project.common.anno.Loggable;
+import com.cowrite.project.common.enums.LogType;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -46,6 +48,7 @@ public class OrganizationInviteServiceImpl extends ServiceImpl<OrganizationInvit
     }
 
     @Override
+    @Loggable(type = LogType.CONFIGURATION, value = "创建邀请码")
     public InviteResponseVO createInvite(InviteCreateDTO inviteCreateDTO) {
         SignalContextCollector.collect(EVENT_INTER_MEDIATE_USER, AuthContext.getCurrentUser());
         OrganizationInvite invite = new OrganizationInvite();
@@ -120,6 +123,7 @@ public class OrganizationInviteServiceImpl extends ServiceImpl<OrganizationInvit
     }
 
     @Override
+    @Loggable(type = LogType.CONFIGURATION, value = "使用邀请码")
     public void useInvite(String code, Long userId) {
         // 1. 查询邀请码
         OrganizationInvite invite = this.getOrgIdByCode(code);

@@ -1,4 +1,6 @@
 package com.cowrite.project.service.impl;
+import com.cowrite.project.common.anno.Loggable;
+import com.cowrite.project.common.enums.LogType;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -51,6 +53,7 @@ public class DocumentShareServiceImpl extends ServiceImpl<DocumentShareMapper, D
     }
 
     @Override
+    @Loggable(type = LogType.CONFIGURATION, value = "创建分享链接")
     public InviteResponseVO createShareLink(Long id, CreateDocumentShareLinkRequest request) {
         DocumentShare share = new DocumentShare();
         share.setId(SnowflakeIdGenerator.nextId());

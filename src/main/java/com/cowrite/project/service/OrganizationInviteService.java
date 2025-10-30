@@ -1,8 +1,6 @@
 package com.cowrite.project.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.cowrite.project.common.anno.Loggable;
-import com.cowrite.project.common.enums.LogType;
 import com.cowrite.project.model.dto.organization.InviteCreateDTO;
 import com.cowrite.project.model.entity.OrganizationInvite;
 import com.cowrite.project.model.vo.InviteResponseVO;
@@ -21,7 +19,6 @@ public interface OrganizationInviteService extends IService<OrganizationInvite> 
       * @return 邀请码
       */
      @SignalEmitter("invite.create")
-     @Loggable(type = LogType.CONFIGURATION, value = "创建邀请码")
      public InviteResponseVO createInvite(InviteCreateDTO invite);
 
      /**
@@ -29,7 +26,6 @@ public interface OrganizationInviteService extends IService<OrganizationInvite> 
       * @param code 邀请码
       * @return 邀请信息
       */
-     @Loggable(type = LogType.CONFIGURATION, value = "获取邀请信息")
      public OrganizationInvite getByCode(String code);
 
      /**
@@ -37,7 +33,6 @@ public interface OrganizationInviteService extends IService<OrganizationInvite> 
       * @param code 邀请码
       * @return 邀请信息
       */
-     @Loggable(type = LogType.CONFIGURATION, value = "验证邀请码")
      public OrganizationInviteVO validateInviteCode(String code);
 
      /**
@@ -46,7 +41,6 @@ public interface OrganizationInviteService extends IService<OrganizationInvite> 
       * @param userId 用户ID
       */
      @SignalEmitter("invite.use")
-     @Loggable(type = LogType.CONFIGURATION, value = "使用邀请码")
      public void useInvite(String code, Long userId);
 
 }
