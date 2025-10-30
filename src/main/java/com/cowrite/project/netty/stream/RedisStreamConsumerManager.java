@@ -80,7 +80,13 @@ public class RedisStreamConsumerManager {
                 if (records != null && !records.isEmpty()) {
                     for (MapRecord<String, Object, Object> record : records) {
                         try {
-                            NettyMessage message = NettyMessage.fromMap(record.getValue());
+                            NettyMessage message;
+                            if (record.getValue() != null && record.getValue().containsKey("payload")) {
+                                Object payload = record.getValue().get("payload");
+                                message = NettyMessage.fromJson(String.valueOf(payload));
+                            } else {
+                                message = NettyMessage.fromMap(record.getValue());
+                            }
                             documentExecutorManager.execute(docId, () -> {
                                 MessageHandler handler = handlerFactory.getHandler(message.getOperationType());
                                 if (handler != null) {

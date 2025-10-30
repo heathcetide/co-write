@@ -281,7 +281,6 @@ const deleteItem = (item: DocumentItem | null) => {
 .outline-editor {
   position: relative;
   padding: 0.5rem;
-  background-color: #faf9ff;
   border-radius: 12px;
   height: calc(100vh - 4rem); /* 确保高度适应布局 */
   overflow-y: auto;

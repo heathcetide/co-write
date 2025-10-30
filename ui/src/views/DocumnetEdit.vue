@@ -474,7 +474,7 @@ function closeWebSocket() {
 }
 
 function initWebSocket() {
-  const wsUrl = `ws://192.168.0.112:8081/ws`
+  const wsUrl = `ws://127.0.0.1:8081/ws`
   if (socket.value && socket.value.readyState === WebSocket.OPEN) return
   if (socket.value && socket.value.readyState === WebSocket.CONNECTING) return
   socket.value = new WebSocket(wsUrl)
