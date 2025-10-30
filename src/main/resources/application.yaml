@@ -98,6 +98,23 @@ spring:
         max-concurrency: 8
         prefetch: 50
 
+  # Debezium (CDC) 可选配置，默认关闭
+  debezium:
+    enabled: false
+    name: cowrite-cdc-engine
+    offset.storage.file.filename: ${CDC_OFFSET_FILE:/tmp/debezium-offsets.dat}
+    history.file.filename: ${CDC_HISTORY_FILE:/tmp/debezium-history.dat}
+    connector.class: io.debezium.connector.mysql.MySqlConnector
+    database.hostname: ${MYSQL_HOST:localhost}
+    database.port: ${MYSQL_PORT:3306}
+    database.user: ${MYSQL_USER:root}
+    database.password: ${MYSQL_PASSWORD:root}
+    database.server.id: 184054
+    database.server.name: cowrite-mysql
+    include.schema.changes: false
+    database.include.list: ${MYSQL_DB:cowrite}
+    table.include.list: ${CDC_TABLES:hib_outbox_event}
+
   # MongoDB 配置
   data:
     mongodb:
