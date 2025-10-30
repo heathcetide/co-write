@@ -84,6 +84,20 @@ spring:
     database: 1
     password: 123456
 
+  # RabbitMQ
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    listener:
+      simple:
+        acknowledge-mode: auto
+        concurrency: 2
+        max-concurrency: 8
+        prefetch: 50
+
   # MongoDB 配置
   data:
     mongodb:

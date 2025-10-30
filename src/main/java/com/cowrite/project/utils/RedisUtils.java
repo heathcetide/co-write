@@ -277,7 +277,7 @@ public class RedisUtils {
                 try {
                     cursor.close();
                 } catch (IOException e) {
-                    log.info("关闭游标时发生异常");
+                    throw new RuntimeException(e);
                 }
             }
             return keys;

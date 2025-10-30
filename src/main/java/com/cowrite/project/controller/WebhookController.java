@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cowrite.project.common.ApiResponse;
 import com.cowrite.project.common.PageRequest;
-import com.cowrite.project.model.entity.Webhook;
+import com.cowrite.project.model.entity.BillingWebhook;
 import com.cowrite.project.service.WebhookService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +30,7 @@ public class WebhookController {
      * @return 是否新增成功
      */
     @PostMapping
-    public ApiResponse<Boolean> add(@RequestBody Webhook entity) {
+    public ApiResponse<Boolean> add(@RequestBody BillingWebhook entity) {
         return ApiResponse.success(webhookService.save(entity));
     }
 
@@ -40,7 +40,7 @@ public class WebhookController {
      * @return 是否更新成功
      */
     @PutMapping
-    public ApiResponse<Boolean> update(@RequestBody Webhook entity) {
+    public ApiResponse<Boolean> update(@RequestBody BillingWebhook entity) {
         return ApiResponse.success(webhookService.updateById(entity));
     }
 
@@ -50,7 +50,7 @@ public class WebhookController {
      * @return 是否删除成功
      */
     @DeleteMapping("/{id}")
-    public ApiResponse<Boolean> delete(@PathVariable("id") Integer id) {
+    public ApiResponse<Boolean> delete(@PathVariable("id") Long id) {
         return ApiResponse.success(webhookService.removeById(id));
     }
 
@@ -60,7 +60,7 @@ public class WebhookController {
      * @return 匹配的实体对象
      */
     @GetMapping("/{id}")
-    public ApiResponse<Webhook> getById(@PathVariable("id") Integer id) {
+    public ApiResponse<BillingWebhook> getById(@PathVariable("id") Long id) {
         return ApiResponse.success(webhookService.getById(id));
     }
 
@@ -69,7 +69,7 @@ public class WebhookController {
      * @return 实体列表
      */
     @GetMapping
-    public ApiResponse<List<Webhook>> list() {
+    public ApiResponse<List<BillingWebhook>> list() {
         return ApiResponse.success(webhookService.list());
     }
 
@@ -80,9 +80,9 @@ public class WebhookController {
      * @return 分页结果
      */
     @PostMapping("/page")
-    public ApiResponse<Page<Webhook>> getPage(@RequestBody PageRequest pageRequest) {
-        Page<Webhook> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
-        QueryWrapper<Webhook> wrapper = new QueryWrapper<>();
+    public ApiResponse<Page<BillingWebhook>> getPage(@RequestBody PageRequest pageRequest) {
+        Page<BillingWebhook> page = new Page<>(pageRequest.getPage(), pageRequest.getSize());
+        QueryWrapper<BillingWebhook> wrapper = new QueryWrapper<>();
 
         if (pageRequest.getKeyword() != null && !pageRequest.getKeyword().isEmpty()) {
             wrapper.like("name", pageRequest.getKeyword()); // 可自定义字段

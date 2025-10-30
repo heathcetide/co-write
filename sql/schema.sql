@@ -381,3 +381,171 @@ CREATE TABLE hib_social_logins
     `updated_at`        DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`           TINYINT(1) DEFAULT 0 COMMENT '逻辑删除标记（0 - 未删除，1 - 删除）'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='社交登录信息表';
+
+#
+# 事件驱动计费系统相关表
+#
+
+# Outbox 表 - 存储待发送的事件
+CREATE TABLE `hib_outbox_event`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `event_id`        VARCHAR(100) NOT NULL UNIQUE COMMENT '事件唯一ID',
+    `event_type`      VARCHAR(100) NOT NULL COMMENT '事件类型（DOCUMENT_EDIT、AI_CALL、COLLABORATION等）',
+    `aggregate_id`    VARCHAR(100) NOT NULL COMMENT '聚合根ID（如文档ID、用户ID）',
+    `event_data`      JSON NOT NULL COMMENT '事件数据（JSON格式）',
+    `status`          VARCHAR(50) DEFAULT 'PENDING' COMMENT '状态（PENDING/SENT/FAILED）',
+    `retry_count`     INT DEFAULT 0 COMMENT '重试次数',
+    `max_retries`     INT DEFAULT 3 COMMENT '最大重试次数',
+    `next_retry_at`   DATETIME COMMENT '下次重试时间',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`         TINYINT(1) DEFAULT 0 COMMENT '逻辑删除标记（0 - 未删除，1 - 删除）',
+    `sent_at`         DATETIME COMMENT '发送时间',
+    `error_message`   TEXT COMMENT '错误信息',
+    INDEX `idx_status_retry` (`status`, `next_retry_at`),
+    INDEX `idx_event_type` (`event_type`),
+    INDEX `idx_aggregate_id` (`aggregate_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='Outbox事件表';
+
+# 用量统计表 - 按用户和类型统计用量
+CREATE TABLE `hib_usage_metrics`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `user_id`         BIGINT NOT NULL COMMENT '用户ID',
+    `organization_id` BIGINT COMMENT '组织ID',
+    `metric_type`     VARCHAR(50) NOT NULL COMMENT '指标类型（DOCUMENT_EDIT、AI_CALL、COLLABORATION、STORAGE等）',
+    `metric_value`    DECIMAL(15,4) DEFAULT 0 COMMENT '指标数值',
+    `unit`            VARCHAR(20) DEFAULT 'count' COMMENT '单位（count、minutes、bytes等）',
+    `period`          VARCHAR(20) NOT NULL COMMENT '统计周期（daily、monthly）',
+    `period_date`     DATE NOT NULL COMMENT '统计日期',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY `uk_user_metric_period` (`user_id`, `metric_type`, `period`, `period_date`),
+    INDEX `idx_organization` (`organization_id`),
+    INDEX `idx_period_date` (`period_date`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='用量统计表';
+
+# 计费规则表 - 定义不同指标的计费规则
+CREATE TABLE `hib_billing_rules`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `rule_name`       VARCHAR(100) NOT NULL COMMENT '规则名称',
+    `metric_type`     VARCHAR(50) NOT NULL COMMENT '指标类型',
+    `billing_type`    VARCHAR(50) NOT NULL COMMENT '计费类型（PER_UNIT、TIERED、FIXED）',
+    `unit_price`      DECIMAL(10,4) DEFAULT 0 COMMENT '单价',
+    `free_quota`      DECIMAL(15,4) DEFAULT 0 COMMENT '免费额度',
+    `tier_rules`      JSON COMMENT '阶梯计费规则（JSON格式）',
+    `is_active`       BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    `effective_from`  DATETIME NOT NULL COMMENT '生效时间',
+    `effective_to`    DATETIME COMMENT '失效时间',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_metric_type` (`metric_type`),
+    INDEX `idx_effective` (`effective_from`, `effective_to`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='计费规则表';
+
+# 账单表 - 用户账单记录
+CREATE TABLE `hib_billing_invoice`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `invoice_number`  VARCHAR(100) NOT NULL UNIQUE COMMENT '账单号',
+    `user_id`         BIGINT NOT NULL COMMENT '用户ID',
+    `organization_id` BIGINT COMMENT '组织ID',
+    `billing_period`  VARCHAR(20) NOT NULL COMMENT '计费周期（monthly、yearly）',
+    `period_start`    DATE NOT NULL COMMENT '周期开始日期',
+    `period_end`      DATE NOT NULL COMMENT '周期结束日期',
+    `total_amount`    DECIMAL(12,2) DEFAULT 0 COMMENT '总金额',
+    `paid_amount`     DECIMAL(12,2) DEFAULT 0 COMMENT '已付金额',
+    `status`          VARCHAR(50) DEFAULT 'PENDING' COMMENT '状态（PENDING、PAID、OVERDUE、CANCELLED）',
+    `due_date`        DATE COMMENT '到期日期',
+    `paid_at`         DATETIME COMMENT '支付时间',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_user_period` (`user_id`, `billing_period`, `period_start`),
+    INDEX `idx_organization` (`organization_id`),
+    INDEX `idx_status` (`status`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='账单表';
+
+# 账单明细表 - 账单详细项目
+CREATE TABLE `hib_billing_invoice_item`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `invoice_id`      BIGINT NOT NULL COMMENT '账单ID',
+    `metric_type`     VARCHAR(50) NOT NULL COMMENT '指标类型',
+    `usage_amount`    DECIMAL(15,4) NOT NULL COMMENT '使用量',
+    `unit_price`      DECIMAL(10,4) NOT NULL COMMENT '单价',
+    `total_amount`    DECIMAL(12,2) NOT NULL COMMENT '小计金额',
+    `description`     VARCHAR(255) COMMENT '描述',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX `idx_invoice_id` (`invoice_id`),
+    FOREIGN KEY (`invoice_id`) REFERENCES `hib_billing_invoice`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='账单明细表';
+
+# Webhook 配置表 - 账单通知配置
+CREATE TABLE `hib_billing_webhook`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `organization_id` BIGINT COMMENT '组织ID（为空表示全局配置）',
+    `webhook_url`     VARCHAR(500) NOT NULL COMMENT 'Webhook URL',
+    `secret_key`      VARCHAR(255) COMMENT '签名密钥',
+    `events`          JSON NOT NULL COMMENT '订阅的事件类型',
+    `is_active`       BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    `retry_count`     INT DEFAULT 3 COMMENT '重试次数',
+    `timeout_seconds` INT DEFAULT 30 COMMENT '超时时间（秒）',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_organization` (`organization_id`),
+    INDEX `idx_active` (`is_active`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='Webhook配置表';
+
+# Webhook 发送记录表 - 记录Webhook发送历史
+CREATE TABLE `hib_billing_webhook_log`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `webhook_id`      BIGINT NOT NULL COMMENT 'Webhook配置ID',
+    `event_type`      VARCHAR(100) NOT NULL COMMENT '事件类型',
+    `payload`         JSON NOT NULL COMMENT '发送的数据',
+    `response_code`   INT COMMENT '响应状态码',
+    `response_body`   TEXT COMMENT '响应内容',
+    `status`          VARCHAR(50) NOT NULL COMMENT '状态（SUCCESS、FAILED、RETRYING）',
+    `retry_count`     INT DEFAULT 0 COMMENT '重试次数',
+    `next_retry_at`   DATETIME COMMENT '下次重试时间',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `sent_at`         DATETIME COMMENT '发送时间',
+    INDEX `idx_webhook_id` (`webhook_id`),
+    INDEX `idx_status_retry` (`status`, `next_retry_at`),
+    FOREIGN KEY (`webhook_id`) REFERENCES `hib_billing_webhook`(`id`) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='Webhook发送记录表';
+
+# 阈值预警配置表
+CREATE TABLE `hib_billing_alert`
+(
+    `id`              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `user_id`         BIGINT NOT NULL COMMENT '用户ID',
+    `organization_id` BIGINT COMMENT '组织ID',
+    `metric_type`     VARCHAR(50) NOT NULL COMMENT '指标类型',
+    `threshold_value` DECIMAL(15,4) NOT NULL COMMENT '阈值',
+    `alert_type`     VARCHAR(50) NOT NULL COMMENT '预警类型（USAGE、COST）',
+    `is_active`       BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    `created_at`      DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX `idx_user_metric` (`user_id`, `metric_type`),
+    INDEX `idx_organization` (`organization_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='阈值预警配置表';
