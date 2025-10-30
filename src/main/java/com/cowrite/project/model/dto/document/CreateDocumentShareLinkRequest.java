@@ -44,6 +44,8 @@ public class CreateDocumentShareLinkRequest {
      * 分享备注（附加说明，如“请查看这份文档”）
      */
     private String remark;
+    private String accessPassword;
+    private String passwordHash;
 
     public Long getDocumentId() {
         return documentId;
@@ -100,6 +102,10 @@ public class CreateDocumentShareLinkRequest {
     public void setRemark(String remark) {
         this.remark = remark;
     }
+    public String getAccessPassword() { return accessPassword; }
+    public void setAccessPassword(String accessPassword) { this.accessPassword = accessPassword; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public String getStatus() {
         return status;

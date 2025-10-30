@@ -113,6 +113,32 @@ router.post('/:id/content', async (req, res) => {
     }
 });
 
+// 添加文档收藏
+router.post('/:id/favorite', async (req, res) => {
+    const { id } = req.params;
+    const token = req.headers['authorization'];
+    try {
+        const result = await addFavorite(id, token);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(`Error adding favorite for document ${id}:`, error.message);
+        res.status(500).json({ message: '添加收藏失败' });
+    }
+});
+
+// 删除文档收藏
+router.delete('/:id/favorite', async (req, res) => {
+    const { id } = req.params;
+    const token = req.headers['authorization'];
+    try {
+        const result = await deleteFavorite(id, token);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(`Error removing favorite for document ${id}:`, error.message);
+        res.status(500).json({ message: '取消收藏失败' });
+    }
+});
+
 module.exports = router;
 
 const axios = require('axios');
@@ -189,6 +215,22 @@ const getVersionById = async (versionId, token) => {
 
 const saveContent = async (id, data, token) => {
     const response = await axios.post(`${REMOTE_API_BASE_URL}/api/document/${id}/content`, data, {
+        headers: getHeaders(token)
+    });
+    return response.data;
+};
+
+// 添加文档收藏
+const addFavorite = async (id, token) => {
+    const response = await axios.post(`${REMOTE_API_BASE_URL}/api/document/${id}/favorite`, {}, {
+        headers: getHeaders(token)
+    });
+    return response.data;
+};
+
+// 删除文档收藏
+const deleteFavorite = async (id, token) => {
+    const response = await axios.delete(`${REMOTE_API_BASE_URL}/api/document/${id}/favorite`, {
         headers: getHeaders(token)
     });
     return response.data;

@@ -75,3 +75,19 @@ export const getVersionById = (versionId) => {
 export const saveContent = (id, data) => {
     return request.post(`/documents/${id}/content`, data);
 };
+
+/**
+ * 添加文档收藏
+ * @param {number|string} id - 文档 ID
+ */
+export const addFavorite = (id) => {
+    return request.post(`/documents/${id}/favorite`);
+};
+
+/**
+ * 删除文档收藏
+ * @param {number|string} id - 文档 ID
+ */
+export const deleteFavorite = (id) => {
+    return request.delete(`/documents/${id}/favorite`);
+};

@@ -76,6 +76,26 @@
       </div>
     </div>
 
+    <!-- 文档列表区域 -->
+    <div class="documents-list">
+      <div class="document-item" v-for="doc in sampleDocuments" :key="doc.id">
+        <div class="doc-info">
+          <h3 class="doc-title">{{ doc.title }}</h3>
+          <p class="doc-desc">{{ doc.description }}</p>
+          <div class="doc-meta">
+            <span class="doc-author">{{ doc.author }}</span>
+            <span class="doc-date">{{ doc.updatedAt }}</span>
+          </div>
+        </div>
+        <div class="doc-actions">
+          <button class="action-btn-small" @click="editDocument(doc.id)">编辑</button>
+          <button class="action-btn-small" @click="openShareDialog(doc.id)">分享</button>
+          <button class="action-btn-small" @click="openPermissionDialog(doc.id)">权限</button>
+          <button class="action-btn-small" @click="openAuditDialog(doc.id)">审计</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 特色功能区 -->
     <div class="feature-section combined">
       <button class="feature-btn" @click="openFeature">
@@ -88,6 +108,25 @@
         <span class="date-info">{{ new Date().toISOString().split('T')[0] }}</span>
       </div>
     </div>
+
+    <!-- 对话框组件 -->
+    <DocumentShareDialog
+      :visible="showShareDialog"
+      :documentId="currentDocumentId"
+      @close="showShareDialog = false"
+    />
+
+    <DocumentPermissionDialog
+      :visible="showPermissionDialog"
+      :documentId="currentDocumentId"
+      @close="showPermissionDialog = false"
+    />
+
+    <AuditLogDialog
+      :visible="showAuditDialog"
+      :documentId="currentDocumentId"
+      @close="showAuditDialog = false"
+    />
   </div>
 </template>
 
@@ -95,6 +134,9 @@
 import { ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { FileText, BookOpen, Palette, Bot, Wand2 } from 'lucide-vue-next'
+import DocumentShareDialog from '../components/DocumentShareDialog.vue'
+import DocumentPermissionDialog from '../components/DocumentPermissionDialog.vue'
+import AuditLogDialog from '../components/AuditLogDialog.vue'
 
 // -----------------------
 // 认证状态（用户信息）
@@ -177,6 +219,58 @@ const filterByCategory = (category: string) => {
 
 const openFeature = () => {
   console.log('打开特色功能')
+}
+
+// -----------------------
+// 文档列表和对话框状态
+// -----------------------
+const sampleDocuments = ref([
+  {
+    id: '1',
+    title: '项目需求文档',
+    description: '详细描述项目功能需求和用户故事',
+    author: '张三',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '2', 
+    title: '技术架构设计',
+    description: '系统架构图和技术选型说明',
+    author: '李四',
+    updatedAt: '2024-01-14'
+  },
+  {
+    id: '3',
+    title: 'API接口文档',
+    description: 'RESTful API接口规范和示例',
+    author: '王五',
+    updatedAt: '2024-01-13'
+  }
+])
+
+const currentDocumentId = ref('')
+const showShareDialog = ref(false)
+const showPermissionDialog = ref(false)
+const showAuditDialog = ref(false)
+
+const editDocument = (docId: string) => {
+  // 跳转到编辑页面
+  window.location.href = `/edit?id=${docId}`
+}
+
+const openShareDialog = (docId: string) => {
+  currentDocumentId.value = docId
+  showShareDialog.value = true
+}
+
+const openPermissionDialog = (docId: string) => {
+  currentDocumentId.value = docId
+  showPermissionDialog.value = true
+}
+
+const openAuditDialog = (docId: string) => {
+  currentDocumentId.value = docId
+  showAuditDialog.value = true
 }
 </script>
 
@@ -417,5 +511,104 @@ const openFeature = () => {
   margin-right: 8px;
   vertical-align: -3px;
   color: #2563eb;
+}
+
+/* 文档列表样式 */
+.documents-list {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.document-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.document-item:hover {
+  border-color: #dbeafe;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.doc-info {
+  flex: 1;
+}
+
+.doc-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.doc-desc {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.doc-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.doc-author {
+  font-weight: 500;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn-small {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn-small::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn-small:hover::before {
+  left: 100%;
+}
+
+.action-btn-small:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn-small:active {
+  background: linear-gradient(135deg, #d1d5db 0%, #cbd5e1 100%);
+  transform: translateY(0);
 }
 </style>

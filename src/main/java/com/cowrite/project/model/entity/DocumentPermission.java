@@ -38,10 +38,16 @@ public class DocumentPermission extends BaseEntity implements Serializable, Clon
     private Long userId;
 
     /**
-    * 权限类型（VIEW / EDIT / COMMENT / ADMIN）
-    */
+     * 权限类型（VIEW / EDIT / COMMENT / ADMIN）
+     */
     @TableField("permission")
     private String permission;
+
+    /**
+     * 是否禁用导出（默认false）
+     */
+    @TableField("disable_export")
+    private Boolean disableExport = false;
 
     /**
     * 授权人ID
@@ -97,8 +103,10 @@ public class DocumentPermission extends BaseEntity implements Serializable, Clon
     }
 
     public void setGrantedAt(LocalDateTime grantedAt) {
-    this.grantedAt = grantedAt;
+        this.grantedAt = grantedAt;
     }
+    public Boolean getDisableExport() { return disableExport; }
+    public void setDisableExport(Boolean disableExport) { this.disableExport = disableExport; }
 
     @Override
     public DocumentPermission clone() {

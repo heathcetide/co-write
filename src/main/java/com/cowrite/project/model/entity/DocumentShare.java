@@ -79,10 +79,34 @@ public class DocumentShare extends BaseEntity implements Serializable, Cloneable
     private String status;
 
     /**
-     * 转发备注（如“请查看这个文档”）
+     * 转发备注（如"请查看这个文档"）
      */
     @TableField("remark")
     private String remark;
+
+    /**
+     * 外链访问口令（可选，NULL表示无口令）
+     */
+    @TableField("access_password")
+    private String accessPassword;
+
+    /**
+     * 口令哈希（存储加密后的口令）
+     */
+    @TableField("password_hash")
+    private String passwordHash;
+
+    /**
+     * 口令错误重试次数（默认0）
+     */
+    @TableField("password_retry_count")
+    private Integer passwordRetryCount = 0;
+
+    /**
+     * 口令锁定时间（输错多次后锁定）
+     */
+    @TableField("password_locked_until")
+    private LocalDateTime passwordLockedUntil;
 
     public boolean isExpired() {
         return expireTime != null && expireTime.isBefore(LocalDateTime.now());
@@ -175,6 +199,15 @@ public class DocumentShare extends BaseEntity implements Serializable, Cloneable
     public void setRemark(String remark) {
         this.remark = remark;
     }
+
+    public String getAccessPassword() { return accessPassword; }
+    public void setAccessPassword(String accessPassword) { this.accessPassword = accessPassword; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public Integer getPasswordRetryCount() { return passwordRetryCount; }
+    public void setPasswordRetryCount(Integer passwordRetryCount) { this.passwordRetryCount = passwordRetryCount; }
+    public LocalDateTime getPasswordLockedUntil() { return passwordLockedUntil; }
+    public void setPasswordLockedUntil(LocalDateTime passwordLockedUntil) { this.passwordLockedUntil = passwordLockedUntil; }
 
     @Override
     public DocumentShare clone() {

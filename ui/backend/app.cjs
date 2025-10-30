@@ -9,6 +9,8 @@ const documentRoutes = require('./routes/document.cjs');
 const organizationInviteRoutes = require('./routes/organizationInvite.cjs');
 const organizationRoutes = require('./routes/organization.cjs');
 const organizationMemberRoutes = require('./routes/organizationMember.cjs');
+const documentShareRoutes = require('./routes/documentShare.cjs');
+const auditRoutes = require('./routes/audit.cjs');
 const requestLogger = require('./middlewares/requestLogger.cjs'); // ✅ 日志中间件
 
 const cors = require('cors');
@@ -37,5 +39,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/organization/invite',organizationInviteRoutes);
 app.use('/api/organization', organizationRoutes)
 app.use('/api/organization/member', organizationMemberRoutes)
+app.use('/api/document-share', documentShareRoutes);
+app.use('/api/audit', auditRoutes);
 
 module.exports = app;

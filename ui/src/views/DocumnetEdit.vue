@@ -47,7 +47,9 @@
           {{ isCollabMode ? '退出协同' : '开启协同' }}
         </button>
         <button class="action-btn" @click="handleSave">保存</button>
-        <button class="action-btn" @click="handleShare" disabled>分享</button>
+        <button class="action-btn" @click="showShareDialog = true">分享</button>
+        <button class="action-btn" @click="showPermissionDialog = true">权限</button>
+        <button class="action-btn" @click="showAuditDialog = true">审计</button>
       </div>
     </div>
     <div class="doc-title-input">
@@ -79,6 +81,36 @@
       <span class="cursor-label" :style="{ backgroundColor: userColor }">{{ userName }}</span>
     </div>
   </div>
+  
+  <!-- 分享对话框 -->
+  <DocumentShareDialog
+    :visible="showShareDialog"
+    :documentId="docId"
+    @close="showShareDialog = false"
+  />
+
+  <!-- 权限管理对话框 -->
+  <DocumentPermissionDialog
+    :visible="showPermissionDialog"
+    :documentId="docId"
+    @close="showPermissionDialog = false"
+  />
+
+  <!-- 审计日志对话框 -->
+  <AuditLogDialog
+    :visible="showAuditDialog"
+    :documentId="docId"
+    @close="showAuditDialog = false"
+  />
+
+  <!-- 分享口令验证对话框 -->
+  <SharePasswordDialog
+    :visible="showPasswordDialog"
+    :shareCode="shareCode"
+    @close="showPasswordDialog = false"
+    @success="handlePasswordSuccess"
+  />
+  
   <SystemToast ref="toastRef" />
 </template>
 
@@ -94,6 +126,10 @@ import 'md-editor-v3/lib/style.css'
 import Select from '../components/Select.vue'
 import {useAuth} from '../composables/useAuth'
 import SystemToast from '../components/SystemToast.vue'
+import DocumentShareDialog from '../components/DocumentShareDialog.vue'
+import DocumentPermissionDialog from '../components/DocumentPermissionDialog.vue'
+import AuditLogDialog from '../components/AuditLogDialog.vue'
+import SharePasswordDialog from '../components/SharePasswordDialog.vue'
 
 const route = useRoute()
 const prevContent = ref('')
@@ -106,6 +142,13 @@ let imeBaseline = ''
 const suggestion = ref('')
 const showSuggestion = ref(false)
 const suggestionPosition = ref({ bottom: 0, left: 0 })
+
+// 对话框状态
+const showShareDialog = ref(false)
+const showPermissionDialog = ref(false)
+const showAuditDialog = ref(false)
+const showPasswordDialog = ref(false)
+const shareCode = ref('')
 
 function applySuggestion() {
   textContent.value = textContent.value + suggestion.value
@@ -309,7 +352,13 @@ function handleSave() {
   triggerSave('click-save')
 }
 function handleShare() {
-  alert('分享功能待实现')
+  showShareDialog.value = true
+}
+
+function handlePasswordSuccess(data: any) {
+  // 口令验证成功，可以访问文档
+  console.log('口令验证成功:', data)
+  showPasswordDialog.value = false
 }
 onMounted(() => {
   window.addEventListener('keydown', onKeyDown);

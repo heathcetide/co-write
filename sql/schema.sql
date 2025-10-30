@@ -286,10 +286,40 @@ CREATE TABLE `hib_document_permission`
     `created_at`  DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at`  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     TINYINT(1) DEFAULT 0 COMMENT '逻辑删除标记（0 - 未删除，1 - 删除）',
+    `disable_export` BOOLEAN DEFAULT FALSE COMMENT '是否禁用导出（0 - 允许，1 - 禁用）',
     UNIQUE KEY `uk_doc_user` (`document_id`, `user_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='文档细粒度权限控制表';
+
+#
+Document Share
+CREATE TABLE `hib_document_share`
+(
+    `id`                  BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `document_id`         BIGINT       NOT NULL COMMENT '文档ID',
+    `share_code`          VARCHAR(100) NOT NULL UNIQUE COMMENT '分享码（短链接标识）',
+    `share_type`          VARCHAR(50)  NOT NULL COMMENT '分享类型（LINK / PASSWORD）',
+    `permission`          VARCHAR(50)  NOT NULL COMMENT '分享权限（VIEW / EDIT / COMMENT）',
+    `access_password`     VARCHAR(255) COMMENT '访问口令（明文，用于展示）',
+    `password_hash`       VARCHAR(255) COMMENT '口令哈希（用于验证）',
+    `password_retry_count` INT DEFAULT 0 COMMENT '口令重试次数',
+    `password_locked_until` DATETIME COMMENT '口令锁定到期时间',
+    `status`              VARCHAR(50)  DEFAULT 'ACTIVE' COMMENT '状态（ACTIVE / EXPIRED / REVOKED）',
+    `expire_time`         DATETIME COMMENT '过期时间',
+    `remark`              TEXT COMMENT '分享说明',
+    `creator_id`          BIGINT       NOT NULL COMMENT '创建人ID',
+    `access_count`        INT          DEFAULT 0 COMMENT '访问次数',
+    `last_accessed_at`    DATETIME COMMENT '最后访问时间',
+    `created_at`          DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`          DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`             TINYINT(1)   DEFAULT 0 COMMENT '逻辑删除标记（0 - 未删除，1 - 删除）',
+    INDEX `idx_document_id` (`document_id`),
+    INDEX `idx_share_code` (`share_code`),
+    INDEX `idx_creator_id` (`creator_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='文档分享表';
 
 #
 Webhook

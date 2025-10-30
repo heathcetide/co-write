@@ -54,10 +54,10 @@ public class DocumentShareServiceImpl extends ServiceImpl<DocumentShareMapper, D
 
     @Override
     @Loggable(type = LogType.CONFIGURATION, value = "创建分享链接")
-    public InviteResponseVO createShareLink(Long id, CreateDocumentShareLinkRequest request) {
+    public InviteResponseVO createShareLink(Long documentId, CreateDocumentShareLinkRequest request) {
         DocumentShare share = new DocumentShare();
         share.setId(SnowflakeIdGenerator.nextId());
-        share.setDocumentId(id);
+        share.setDocumentId(documentId);
         share.setShareFromUserId(request.getShareFromUserId());
         share.setShareToUserId(request.getShareToUserId());
         share.setPermission(request.getPermission());
@@ -65,11 +65,13 @@ public class DocumentShareServiceImpl extends ServiceImpl<DocumentShareMapper, D
         share.setRemark(request.getRemark());
         share.setStatus(request.getStatus());
         share.setExpireTime(request.getExpireTime());
+        share.setPasswordHash(request.getPasswordHash());
+        share.setPasswordRetryCount(0);
 
         // 生成短码
         String shortCode = CodeUtil.encode(share.getId());
         share.setShortCode(shortCode);
-        this.updateById(share); // 保存邀请码字段
+        this.save(share); // 保存分享记录
 
         String baseUrl = serverConfig.getInviteBaseUrl();
         String fullUrl = baseUrl + "/" + shortCode;

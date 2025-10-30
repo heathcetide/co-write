@@ -6,6 +6,8 @@ import * as operatorApi from './operator.js';
 import * as pluginApi from './plugin.js';
 import * as knowledgeBaseApi from './knowledgeBase.js';
 import * as documentApi from './document.js';
+import * as documentShareApi from './documentShare.js';
+import * as auditApi from './audit.js';
 import * as organizationApi from './organization.js';
 
 // 统一暴露接口
@@ -17,5 +19,7 @@ export default {
     pluginApi,
     knowledgeBaseApi,
     documentApi,
+    documentShareApi,
+    auditApi,
     organizationApi
 };

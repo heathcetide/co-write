@@ -9,11 +9,15 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AnimatedNumberCard: typeof import('./src/components/AnimatedNumberCard.vue')['default']
+    AuditLogDialog: typeof import('./src/components/AuditLogDialog.vue')['default']
     Avatar: typeof import('./src/components/Avatar.vue')['default']
     AvatarGroup: typeof import('./src/components/AvatarGroup.vue')['default']
     CherryMarkdown: typeof import('./src/components/CherryMarkdown/index.vue')['default']
     ContributionGraph: typeof import('./src/components/ContributionGraph.vue')['default']
     CustomModal: typeof import('./src/components/CustomModal.vue')['default']
+    DocumentActionBar: typeof import('./src/components/DocumentActionBar.vue')['default']
+    DocumentPermissionDialog: typeof import('./src/components/DocumentPermissionDialog.vue')['default']
+    DocumentShareDialog: typeof import('./src/components/DocumentShareDialog.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     IconMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IconMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
@@ -32,6 +36,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Select: typeof import('./src/components/Select.vue')['default']
+    SharePasswordDialog: typeof import('./src/components/SharePasswordDialog.vue')['default']
     SiderMenu: typeof import('./src/components/SiderMenu.vue')['default']
     SnowEve: typeof import('./src/components/SnowEve.vue')['default']
     SystemToast: typeof import('./src/components/SystemToast.vue')['default']
