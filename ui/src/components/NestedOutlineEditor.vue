@@ -88,6 +88,12 @@ const visibleItems = computed(() => {
   const stack: number[] = []
 
   for (const item of localItems.value) {
+    // 检查 item 是否存在且有 id
+    if (!item || !item.id) {
+      console.warn('NestedOutlineEditor: 发现无效的 item', item)
+      continue
+    }
+
     // 如果上层有节点是折叠的，则跳过当前项
     if (stack.some(level => item.level > level)) {
       continue
@@ -96,7 +102,9 @@ const visibleItems = computed(() => {
     result.push(item)
 
     // 如果当前项被折叠，则将其 level 压入栈中
-    if (collapsedMap.value[item.id]) {
+    // 确保 id 是字符串类型
+    const itemId = String(item.id)
+    if (collapsedMap.value[itemId]) {
       stack.push(item.level)
     } else {
       // 如果不是折叠，清理掉比它层级大的栈记录
@@ -109,8 +117,9 @@ const visibleItems = computed(() => {
   return result
 })
 
-const toggleCollapse = (id: string) => {
-  collapsedMap.value[id] = !collapsedMap.value[id]
+const toggleCollapse = (id: string | number) => {
+  const idStr = String(id)
+  collapsedMap.value[idStr] = !collapsedMap.value[idStr]
 }
 
 const closeContextMenu = () => {
@@ -229,8 +238,20 @@ const addChild = async (parent: DocumentItem) => {
     const response = await api.documentApi.createDocument(newDocPayload)
     const createdDoc = response.data
 
-    const index = localItems.value.findIndex((i) => i.id === parent.id)
-    localItems.value.splice(index + 1, 0, createdDoc)
+    // 确保创建的数据格式正确：id 和 parentId 转换为字符串
+    const formattedDoc: DocumentItem = {
+      id: String(createdDoc.id || createdDoc.documentId || ''),
+      title: createdDoc.title || '新建子文档',
+      level: createdDoc.level || Math.min(parent.level + 1, 4),
+      parentId: createdDoc.parentId ? String(createdDoc.parentId) : String(parent.id)
+    }
+
+    const index = localItems.value.findIndex((i) => String(i.id) === String(parent.id))
+    if (index !== -1) {
+      localItems.value.splice(index + 1, 0, formattedDoc)
+    } else {
+      localItems.value.push(formattedDoc)
+    }
     emitItems()
   } catch (err) {
     console.error('创建文档失败:', err)

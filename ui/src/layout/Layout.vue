@@ -51,8 +51,24 @@ async function onRepoSelect(repo: any) {
   selectedRepo.value = repo
   console.log(selectedRepo.value)
   console.log(isHideRightSidebar.value)
-  const results = await api.documentApi.getDocumentsByKnowledgeBase(repo.id)
-  docCatalog.value = results.data;
+  try {
+    const results = await api.documentApi.getDocumentsByKnowledgeBase(repo.id)
+    // 转换数据格式：将 id 和 parentId 从数字转换为字符串
+    if (results && results.data) {
+      docCatalog.value = results.data.map((doc: any) => ({
+        ...doc,
+        id: String(doc.id || doc.documentId || ''),
+        parentId: doc.parentId ? String(doc.parentId) : null,
+        title: doc.title || '未命名文档',
+        level: doc.level || 0
+      }))
+    } else {
+      docCatalog.value = []
+    }
+  } catch (error) {
+    console.error('获取文档列表失败:', error)
+    docCatalog.value = []
+  }
 }
 
 interface Repository {

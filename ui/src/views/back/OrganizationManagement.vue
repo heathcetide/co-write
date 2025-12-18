@@ -206,8 +206,8 @@ const fetchTeams = async () => {
   try {
     // 拼接接口地址：根据类型调用不同接口（或同一接口传不同参数）
     const url = gourpSelectType.value
-        ? "http://localhost:3000/api/organization/organized/manage"  // 我管理的团队接口
-        : "http://localhost:3000/api/organization/organized";  // 我参与的团队接口
+        ? "http://localhost:8080/api/organization/organized/manage"  // 我管理的团队接口
+        : "http://localhost:8080/api/organization/organized";  // 我参与的团队接口
 
     const res = await axios.post<ApiResponse>(
         url,
@@ -267,7 +267,7 @@ const generateInvite = async () => {
     const formattedExpiresAt = dayjs(expiryDate.value).format('YYYY-MM-DDTHH:mm:00');
     // 调用后端接口
     const response = await axios.post(
-        "http://localhost:3000/api/organization/invite/create",
+        "http://localhost:8080/api/organization/invite/create",
         {
           organizationId: currentTeamId.value,
           role: selectedRole.value,

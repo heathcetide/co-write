@@ -33,7 +33,7 @@ const notify = {
 
 // 创建 axios 实例
 const instance = axios.create({
-    baseURL: 'http://localhost:3000/api', // 根据实际情况设置 API 地址
+    baseURL: 'http://localhost:8080/api', // 直接指向 Java 后端
     timeout: 10000, // 设置请求超时
 });
 

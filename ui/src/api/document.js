@@ -5,7 +5,7 @@ import request from '../utils/request';
  * @param {Object} params - 包含 page, size, knowledgeBaseId, parentId（可选）
  */
 export const getDocuments = (params = {}) => {
-    return request.get('/documents/list', { params }); // 对应 Node 路由 /api/documents
+    return request.get('/document/list', { params }); // 对应 Java 后端 /api/document/list
 };
 
 /**
@@ -13,7 +13,7 @@ export const getDocuments = (params = {}) => {
  * @param {Object} data - 包含 title, knowledgeBaseId, parentId, level, order 等字段
  */
 export const createDocument = (data) => {
-    return request.post('/documents/create', data);
+    return request.post('/document/create', data); // 对应 Java 后端 /api/document/create
 };
 
 /**
@@ -21,7 +21,7 @@ export const createDocument = (data) => {
  * @param {Object} data - 必须包含 id，其他字段根据实际情况传递
  */
 export const updateDocument = (data) => {
-    return request.post('/documents/update', data);
+    return request.post('/document/update', data); // 对应 Java 后端 /api/document/update
 };
 
 /**
@@ -29,7 +29,7 @@ export const updateDocument = (data) => {
  * @param {number|string} id - 文档 ID
  */
 export const deleteDocument = (id) => {
-    return request.delete(`/documents/${id}`);
+    return request.delete(`/document/delete/${id}`); // 对应 Java 后端 /api/document/delete/{id}
 };
 
 /**
@@ -37,9 +37,9 @@ export const deleteDocument = (id) => {
  * @param {number|string} knowledgeBaseId
  */
 export const getDocumentsByKnowledgeBase = (knowledgeBaseId) => {
-    return request.get('/documents/listByKnowledgeBase', {
+    return request.get('/document/listByKnowledgeBase', {
         params: { knowledgeBaseId }
-    });
+    }); // 对应 Java 后端 /api/document/listByKnowledgeBase
 };
 
 /**
@@ -47,7 +47,7 @@ export const getDocumentsByKnowledgeBase = (knowledgeBaseId) => {
  * @param {number|string} id - 文档 ID
  */
 export const getLatestContent = (id) => {
-    return request.get(`/documents/${id}/content`);
+    return request.get(`/document/${id}/content`); // 对应 Java 后端 /api/document/{id}/content
 };
 
 /**
@@ -55,7 +55,7 @@ export const getLatestContent = (id) => {
  * @param {number|string} id - 文档 ID
  */
 export const getVersionList = (id) => {
-    return request.get(`/documents/${id}/versions`);
+    return request.get(`/document/${id}/versions`); // 对应 Java 后端 /api/document/{id}/versions
 };
 
 /**
@@ -64,7 +64,7 @@ export const getVersionList = (id) => {
  */
 export const getVersionById = (versionId) => {
     // 注意：路径中 id 为占位，实际不影响返回结果，可为任意数字
-    return request.get(`/documents/0/versions/${versionId}`);
+    return request.get(`/document/0/versions/${versionId}`); // 对应 Java 后端 /api/document/{id}/versions/{versionId}
 };
 
 /**
@@ -73,7 +73,7 @@ export const getVersionById = (versionId) => {
  * @param {Object} data - 包含 title, content, latestOp 等字段
  */
 export const saveContent = (id, data) => {
-    return request.post(`/documents/${id}/content`, data);
+    return request.post(`/document/${id}/content`, data); // 对应 Java 后端 /api/document/{id}/content
 };
 
 /**
@@ -81,7 +81,7 @@ export const saveContent = (id, data) => {
  * @param {number|string} id - 文档 ID
  */
 export const addFavorite = (id) => {
-    return request.post(`/documents/${id}/favorite`);
+    return request.post(`/document_favorite/${id}`); // 对应 Java 后端 /api/document_favorite/{id}
 };
 
 /**
@@ -89,5 +89,5 @@ export const addFavorite = (id) => {
  * @param {number|string} id - 文档 ID
  */
 export const deleteFavorite = (id) => {
-    return request.delete(`/documents/${id}/favorite`);
+    return request.delete(`/document_favorite/${id}`); // 对应 Java 后端 /api/document_favorite/{id}
 };

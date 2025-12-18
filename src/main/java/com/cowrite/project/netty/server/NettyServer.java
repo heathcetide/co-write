@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 @ConditionalOnProperty(name = "netty.enabled", havingValue = "true", matchIfMissing = true)
 public class NettyServer {
 
-    @Value("${netty.server.port:8081}")
+    @Value("${netty.server.port:8090}")
     private int port;
 
     private EventLoopGroup bossGroup;
