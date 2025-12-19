@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { reactive,ref } from 'vue'
-import Avatar from '../../components/Avatar.vue'
 import Textarea from '../../components/Textarea.vue'
 import api from '../../api/index'
 import { useAuth } from '../../composables/useAuth'
 import { User, AtSign, FileText, Palette, MailCheck, Globe, Save, Edit3 } from 'lucide-vue-next'
+import { Message } from '@arco-design/web-vue'
 const { getUserInfo, setUserInfo } = useAuth()
 const userInfo = getUserInfo
 
@@ -45,18 +45,27 @@ const saveChanges = async () => {
 };
 
 // 头像上传处理
-const handleAvatarUpload = async (file: File) => {
+const handleAvatarUpload = async (fileList: any[]) => {
+  const file = fileList[0]?.file
+  if (!file) return
+  
   console.log(file); // 打印文件信息，检查文件是否正确传递
   try {
     const response = await api.userApi.uploadAvatar(file);
     console.log('头像上传成功', response);
-    user.avatar_url = response.data;  // 假设返回的新头像 URL
-    // 同步更新 useAuth 中的 userInfo
-    const updatedUserInfo = { ...userInfo.value, avatarUrl: user.avatar_url }; // 更新 avatarUrl
-    setUserInfo(updatedUserInfo);  // 更新 useAuth 中的 userInfo
-
-  } catch (error) {
+    if (response.code === 200 && response.data) {
+      user.avatar_url = response.data;  // 假设返回的新头像 URL
+      // 同步更新 useAuth 中的 userInfo
+      const updatedUserInfo = { ...userInfo.value, avatarUrl: user.avatar_url }; // 更新 avatarUrl
+      setUserInfo(updatedUserInfo);  // 更新 useAuth 中的 userInfo
+      Message.success('头像上传成功')
+    } else {
+      Message.error(response.message || '头像上传失败')
+    }
+  } catch (error: any) {
     console.error('头像上传失败', error);
+    const errorMessage = error.response?.data?.message || error.message || '头像上传失败'
+    Message.error(errorMessage)
   }
 };
 </script>
@@ -66,14 +75,25 @@ const handleAvatarUpload = async (file: File) => {
     <!-- 用户个人信息展示 -->
     <div class="profile-header">
       <div class="profile-avatar">
-        <Avatar
-            size="vlg"
-            :src="user.avatar_url"
-            :alt="user.username"
-            :upload="true"
-            :tooltip="'点击上传头像'"
-            @upload="handleAvatarUpload"
-        />
+        <a-upload
+            :auto-upload="false"
+            :show-file-list="false"
+            @change="handleAvatarUpload"
+            accept="image/*"
+        >
+          <template #upload-button>
+            <a-avatar
+                :size="80"
+                :src="user.avatar_url"
+                :style="{ cursor: 'pointer' }"
+            >
+              {{ user.username?.[0]?.toUpperCase() || 'U' }}
+            </a-avatar>
+          </template>
+        </a-upload>
+        <a-typography-text type="secondary" style="display: block; margin-top: 8px; font-size: 12px; text-align: center;">
+          点击上传头像
+        </a-typography-text>
       </div>
       <div class="profile-info">
         <h1 class="title"><User class="t-icon" /> {{ editing ? '编辑个人资料' : '个人资料' }}</h1>

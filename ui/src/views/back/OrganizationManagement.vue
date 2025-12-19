@@ -1,788 +1,858 @@
 <template>
-  <div class="org-page">
+  <div class="org-management-page">
     <!-- 顶部操作栏 -->
-    <div class="top-bar">
-      <!-- 胶囊返回按钮（位于左上角） -->
-      <button class="gradient-button" @click="goBack">
-        <svg height="20" width="20" viewBox="0 0 24 24">
-          <path d="M0 0h24v24H0z" fill="none"></path>
-          <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"></path>
-        </svg>
-        <span class="text">返回</span>
-      </button>
+    <a-card :bordered="false" class="header-card">
+      <a-space :size="16" align="center" style="width: 100%; justify-content: space-between;">
+        <a-space :size="12" align="center">
+          <a-button type="text" @click="goBack">
+            <template #icon>
+              <icon-arrow-left />
+            </template>
+            返回
+          </a-button>
+          <a-divider type="vertical" />
+          <a-typography-title :heading="5" style="margin: 0;">组织管理中心</a-typography-title>
+        </a-space>
+        
+        <a-space>
+          <a-radio-group 
+              v-model="viewType" 
+              type="button"
+              @change="handleViewTypeChange"
+          >
+            <a-radio value="managed">我管理的团队</a-radio>
+            <a-radio value="participated">我参与的团队</a-radio>
+          </a-radio-group>
+          <a-button type="primary" @click="showCreateModal">
+            <template #icon>
+              <icon-plus />
+            </template>
+            创建组织
+          </a-button>
+        </a-space>
+      </a-space>
+    </a-card>
 
-      <!-- 筛选按钮 -->
-      <div class="top-bar-actions">
-        <button
-            @click="gourpSelectType = true"
-            :class="{ active: gourpSelectType }"
-            class="filter-btn"
+    <!-- 组织列表 -->
+    <a-spin :loading="loading" style="width: 100%;">
+      <a-empty 
+          v-if="!loading && organizations.length === 0" 
+          description="暂无组织"
+          style="margin: 60px 0;"
+      />
+      
+      <a-row :gutter="[24, 24]" v-else>
+        <a-col 
+            v-for="org in organizations" 
+            :key="org.id"
+            :xs="24" 
+            :sm="12" 
+            :md="8" 
+            :lg="6"
         >
-          我管理的团队
-        </button>
-        <button
-            @click="gourpSelectType = false"
-            :class="{ active: !gourpSelectType }"
-            class="filter-btn"
+          <a-card 
+              class="org-card" 
+              :hoverable="true"
+              :bordered="true"
+          >
+            <template #cover>
+              <div class="org-cover">
+                <a-avatar 
+                    :size="64" 
+                    :style="getOrgAvatarStyle(org.name)"
+                >
+                  {{ org.name?.[0]?.toUpperCase() || 'O' }}
+                </a-avatar>
+              </div>
+            </template>
+            
+            <a-card-meta>
+              <template #title>
+                <a-typography-title :heading="6" style="margin: 0;">
+                  {{ org.name }}
+                </a-typography-title>
+              </template>
+              <template #description>
+                <a-space direction="vertical" :size="4" style="width: 100%;">
+                  <a-typography-text 
+                      type="secondary" 
+                      :ellipsis="{ rows: 2 }"
+                      style="font-size: 12px;"
+                  >
+                    {{ org.description || '暂无描述' }}
+                  </a-typography-text>
+                  
+                  <a-space :size="16" style="margin-top: 8px;">
+                    <a-tag color="blue">
+                      <template #icon>
+                        <icon-user />
+                      </template>
+                      {{ org.currentMembers || 0 }} / {{ org.maxMembers || 50 }}
+                    </a-tag>
+                    <a-tag v-if="org.published" color="green">公开</a-tag>
+                    <a-tag v-else color="gray">私有</a-tag>
+                  </a-space>
+                </a-space>
+              </template>
+            </a-card-meta>
+            
+            <template #actions>
+              <a-space :size="8" style="width: 100%; justify-content: center;">
+                <a-button 
+                    type="primary" 
+                    size="small"
+                    @click="showInviteModal(org)"
+                >
+                  <template #icon>
+                    <icon-user-add />
+                  </template>
+                  邀请
+                </a-button>
+                <a-button 
+                    type="outline" 
+                    size="small"
+                    @click="viewMembers(org)"
+                >
+                  <template #icon>
+                    <icon-user-group />
+                  </template>
+                  成员
+                </a-button>
+                <a-button 
+                    type="outline" 
+                    size="small"
+                    @click="manageOrganization(org)"
+                >
+                  <template #icon>
+                    <icon-settings />
+                  </template>
+                  管理
+                </a-button>
+              </a-space>
+            </template>
+          </a-card>
+        </a-col>
+      </a-row>
+    </a-spin>
+
+    <!-- 创建组织弹窗 -->
+    <a-modal
+        v-model:visible="createModalVisible"
+        title="创建组织"
+        :width="500"
+        @ok="handleCreateOrganization"
+        @cancel="createModalVisible = false"
+        :ok-loading="creating"
+    >
+      <a-form :model="createForm" layout="vertical">
+        <a-form-item label="组织名称" field="name" :rules="[{ required: true, message: '请输入组织名称' }]">
+          <a-input 
+              v-model="createForm.name" 
+              placeholder="请输入组织名称"
+              :max-length="50"
+              show-word-limit
+          />
+        </a-form-item>
+        
+        <a-form-item label="组织描述" field="description">
+          <a-textarea 
+              v-model="createForm.description" 
+              placeholder="请输入组织描述（可选）"
+              :rows="3"
+              :max-length="200"
+              show-word-limit
+          />
+        </a-form-item>
+        
+        <a-form-item label="最大成员数" field="maxMembers">
+          <a-input-number 
+              v-model="createForm.maxMembers" 
+              :min="1"
+              :max="1000"
+              placeholder="最大成员数"
+              style="width: 100%"
+          />
+        </a-form-item>
+        
+        <a-form-item label="是否公开" field="published">
+          <a-switch v-model="createForm.published" />
+          <a-typography-text type="secondary" style="margin-left: 8px;">
+            公开后其他用户可以搜索并申请加入
+          </a-typography-text>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- 邀请协作弹窗 -->
+    <a-modal
+        v-model:visible="inviteModalVisible"
+        title="生成团队邀请码"
+        :width="600"
+        :footer="false"
+        @cancel="closeInviteModal"
+        unmount-on-close
+    >
+      <template #title>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <icon-user-add />
+          <span>生成团队邀请码</span>
+        </div>
+      </template>
+
+      <a-form :model="inviteForm" layout="vertical" @submit="handleGenerateInvite">
+        <a-form-item label="成员角色" field="role">
+          <a-select v-model="inviteForm.role" placeholder="请选择成员角色">
+            <a-option value="OWNER">OWNER</a-option>
+            <a-option value="ADMIN">ADMIN</a-option>
+            <a-option value="MEMBER">MEMBER</a-option>
+          </a-select>
+        </a-form-item>
+
+        <a-form-item label="最大使用次数" field="maxUses">
+          <a-input-number 
+              v-model="inviteForm.maxUses" 
+              :min="1"
+              placeholder="最大使用次数"
+              style="width: 100%"
+          />
+        </a-form-item>
+
+        <a-form-item label="过期时间" field="expiresAt">
+          <a-date-picker
+              v-model="inviteForm.expiresAt"
+              show-time
+              style="width: 100%"
+              placeholder="选择过期时间（可选）"
+          />
+        </a-form-item>
+
+        <!-- 生成的邀请码结果 -->
+        <div v-if="inviteResult" class="invite-result">
+          <a-alert type="success" show-icon>
+            <template #icon>
+              <icon-check-circle-fill />
+            </template>
+            <div style="font-weight: 600; margin-bottom: 12px;">邀请码已成功生成</div>
+          </a-alert>
+          
+          <a-space direction="vertical" :size="12" style="width: 100%; margin-top: 16px;">
+            <div>
+              <a-typography-text type="secondary" style="font-size: 12px;">邀请码</a-typography-text>
+              <a-input-group style="margin-top: 4px;">
+                <a-input :value="inviteResult.inviteCode" readonly />
+                <a-button type="primary" @click="copyInviteCode">
+                  <template #icon>
+                    <icon-copy />
+                  </template>
+                  复制
+                </a-button>
+              </a-input-group>
+            </div>
+            
+            <div>
+              <a-typography-text type="secondary" style="font-size: 12px;">短链接</a-typography-text>
+              <a-input-group style="margin-top: 4px;">
+                <a-input :value="inviteResult.shortUrl" readonly />
+                <a-button type="primary" @click="copyShortLink">
+                  <template #icon>
+                    <icon-copy />
+                  </template>
+                  复制
+                </a-button>
+              </a-input-group>
+            </div>
+            
+            <div v-if="inviteResult.qrCodeUrl" style="text-align: center; margin-top: 16px;">
+              <a-typography-text type="secondary" style="font-size: 12px; display: block; margin-bottom: 8px;">
+                二维码
+              </a-typography-text>
+              <div style="display: inline-block; padding: 16px; background: #f7f8fa; border-radius: 8px;">
+                <qrcode-vue
+                    :value="inviteResult.qrCodeUrl"
+                    :size="180"
+                    level="H"
+                    background="#ffffff"
+                    foreground="#333333"
+                />
+              </div>
+            </div>
+          </a-space>
+          
+          <a-button 
+              type="outline" 
+              long 
+              style="margin-top: 16px;"
+              @click="exportToPDF"
+          >
+            <template #icon>
+              <icon-download />
+            </template>
+            导出为PDF
+          </a-button>
+        </div>
+
+        <a-form-item style="margin-top: 24px; margin-bottom: 0;">
+          <a-space>
+            <a-button @click="closeInviteModal">取消</a-button>
+            <a-button type="primary" html-type="submit" :loading="generating">
+              生成邀请码
+            </a-button>
+          </a-space>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- 成员列表弹窗 -->
+    <a-modal
+        v-model:visible="membersModalVisible"
+        :title="`${currentOrg?.name || ''} - 成员列表`"
+        :width="700"
+        :footer="false"
+        @cancel="membersModalVisible = false"
+        unmount-on-close
+    >
+      <a-spin :loading="membersLoading" style="width: 100%;">
+        <a-list
+            :bordered="false"
+            :data="members"
+            :pagination="false"
         >
-          我参与的团队
-        </button>
-      </div>
-    </div>
+          <template #item="{ item }">
+            <a-list-item>
+              <a-list-item-meta>
+                <template #avatar>
+                  <a-avatar :size="40">
+                    {{ item.username?.[0]?.toUpperCase() || 'U' }}
+                  </a-avatar>
+                </template>
+                <template #title>
+                  <a-space>
+                    <span>{{ item.username }}</span>
+                    <a-tag v-if="item.id === currentOrg?.ownerId" color="red">所有者</a-tag>
+                  </a-space>
+                </template>
+                <template #description>
+                  <a-typography-text type="secondary" style="font-size: 12px;">
+                    {{ item.email }}
+                  </a-typography-text>
+                </template>
+              </a-list-item-meta>
+            </a-list-item>
+          </template>
+        </a-list>
+      </a-spin>
+    </a-modal>
 
-    <!-- 中央卡片列表 -->
-    <div class="team-card-list">
-      <div
-          v-for="team in teams"
-          :key="team.id"
-          class="team-card card"
-      >
-        <div class="card-header">
-          <div class="team-info">
-            <img :src= "avatar"  class="team-avatar" alt=""/>
-            <div class="team-meta">
-              <div class="team-name">{{ team.name }}</div>
-              <div class="team-desc">{{ team.description }}</div>
-              <div class="member-count"><Users class="inline-icon" /> 成员：{{ team.currentMembers }}</div>
-            </div>
-          </div>
-        </div>
+    <!-- 管理组织弹窗 -->
+    <a-modal
+        v-model:visible="manageModalVisible"
+        :title="`管理组织 - ${currentOrg?.name || ''}`"
+        :width="600"
+        @ok="handleUpdateOrganization"
+        @cancel="manageModalVisible = false"
+        :ok-loading="updating"
+    >
+      <a-form :model="manageForm" layout="vertical">
+        <a-form-item label="组织名称" field="name" :rules="[{ required: true, message: '请输入组织名称' }]">
+          <a-input 
+              v-model="manageForm.name" 
+              placeholder="请输入组织名称"
+              :max-length="50"
+              show-word-limit
+          />
+        </a-form-item>
+        
+        <a-form-item label="组织描述" field="description">
+          <a-textarea 
+              v-model="manageForm.description" 
+              placeholder="请输入组织描述（可选）"
+              :rows="3"
+              :max-length="200"
+              show-word-limit
+          />
+        </a-form-item>
+        
+        <a-form-item label="最大成员数" field="maxMembers">
+          <a-input-number 
+              v-model="manageForm.maxMembers" 
+              :min="1"
+              :max="1000"
+              placeholder="最大成员数"
+              style="width: 100%"
+          />
+        </a-form-item>
+        
+        <a-form-item label="是否公开" field="published">
+          <a-switch v-model="manageForm.published" />
+          <a-typography-text type="secondary" style="margin-left: 8px;">
+            公开后其他用户可以搜索并申请加入
+          </a-typography-text>
+        </a-form-item>
+      </a-form>
 
-        <div class="card-footer alt">
-          <button class="new-action-btn invite"  @click="showInviteModal(team.id)">邀请协作</button>
-          <button class="new-action-btn learn">了解更多</button>
-          <button class="new-action-btn manage">管理团队</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 更新后的邀请协作模态框 -->
-    <div class="modal" v-if="showModal">
-      <form class="form">
-        <label class="title">生成团队邀请码</label>
-
-        <!-- 成员角色选择 -->
-        <div class="form-group">
-          <div class="select-wrapper">
-            <UserPlus class="input-icon" />
-            <select class="role-select" v-model="selectedRole">
-              <option value="OWNER">OWNER</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="MEMBER">MEMBER</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 最大使用次数 -->
-        <div class="form-group">
-          <div class="input-wrapper">
-            <Hash class="input-icon" />
-            <input
-                class="input"
-                type="number"
-                placeholder="最大使用次数"
-                v-model="maxUsage"
-                min="1"
-            >
-          </div>
-        </div>
-
-        <!-- 截止日期 -->
-        <div class="form-group">
-          <div class="input-wrapper">
-            <Clock class="input-icon" />
-            <input
-                class="input"
-                type="datetime-local"
-                v-model="expiryDate"
-            >
-          </div>
-        </div>
-
-        <!-- 生成的邀请码和短链接 -->
-        <div class="result-container" v-if="inviteCode">
-          <div class="invite-code-container">
-            <span class="invite-code-label">邀请码:</span>
-            <span class="invite-code">{{ inviteCode }}</span>
-          </div>
-
-          <div class="short-link-container">
-            <span class="short-link-label">短链接:</span>
-            <span class="short-link">{{ shortLink }}</span>
-          </div>
-
-          <div class="success-message">
-            <strong>邀请码已成功生成啦，您可以导出。</strong>
-          </div>
-
-          <!-- 二维码预留位置 -->
-          <div class="qr-code-placeholder">
-            <div class="qr-code-container">
-              <!-- 引入二维码组件，v-if控制显示 -->
-              <qrcode-vue
-                  v-if="qrCodeUrl"
-                  :value="qrCodeUrl"
-                  :size="140"
-                  level="H"
-                  background="#ffffff"
-                  foreground="#333333"
-              />
-              <span class="qr-hint" v-else>扫码加入团队</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 底部按钮 -->
-        <div class="modal--footer">
-          <button class="cancel-btn" type="button" @click="closeModal">取消</button>
-          <button class="generate-btn" type="button" @click="generateInvite">生成</button>
-        </div>
-
-        <button class="export-btn" type="button" v-if="inviteCode" @click="exportToPDF">
-          导出邀请码为PDF
-        </button>
-      </form>
-    </div>
+      <template #footer>
+        <a-space>
+          <a-popconfirm
+              content="确定要删除此组织吗？删除后无法恢复！"
+              @ok="handleDeleteOrganization"
+              :ok-loading="deleting"
+          >
+            <a-button type="outline" status="danger" :loading="deleting">
+              删除组织
+            </a-button>
+          </a-popconfirm>
+          <a-space>
+            <a-button @click="manageModalVisible = false">取消</a-button>
+            <a-button type="primary" @click="handleUpdateOrganization" :loading="updating">
+              保存
+            </a-button>
+          </a-space>
+        </a-space>
+      </template>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch} from "vue";
-import {useRouter} from "vue-router";
-import axios from "axios";
-import dayjs from "dayjs";
-import QrcodeVue from 'qrcode.vue';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
-import { Users, UserPlus, Hash, Clock } from 'lucide-vue-next'
-
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Message } from '@arco-design/web-vue'
+import { 
+  IconArrowLeft, 
+  IconPlus, 
+  IconUser, 
+  IconUserAdd, 
+  IconUserGroup, 
+  IconSettings,
+  IconCheckCircleFill,
+  IconCopy,
+  IconDownload
+} from '@arco-design/web-vue/es/icon'
+import QrcodeVue from 'qrcode.vue'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
+import api from '../../api/index'
+import { useAuth } from '../../composables/useAuth'
+import dayjs from 'dayjs'
 
 const router = useRouter()
-const goBack = () => router.back()
+const { getUserInfo } = useAuth()
+const userInfo = getUserInfo
 
-// 定义团队字段的类型接口（与Java实体类对应）
-interface Team {
-  id: number; // 主键ID（对应Java的Long，TS中用number）
-  name: string; // 组织名称（对应Java的name字段）
-  description: string; // 组织描述（对应Java的description字段，前端模板中可用desc显示）
-  ownerId: number; // 组织拥有者的用户ID（对应Java的ownerId，Long类型对应TS的number）
-  status: string; // 组织状态（如：'active'、'disabled'）
-  published: string; // 是否公开发布（如：'yes'/'no' 或 '1'/'0'）
-  maxMembers: number; // 最大成员数量限制（对应Java的maxMembers，Integer类型）
-  currentMembers: number; // 成员数量
-  createdAt: string;      // 创建时间
-  updatedAt: string;      // 更新时间
-  deleted: boolean;       // 补充（后端是 false，TS 用 boolean）
-  // 补充：如果后端返回了头像或当前成员数，可添加以下字段（根据实际接口返回补充）
-  // avatar?: string; // 组织头像（可选，若后端有返回则添加）
+// 状态管理
+const loading = ref(false)
+const viewType = ref<'managed' | 'participated'>('managed')
+const organizations = ref<any[]>([])
+const createModalVisible = ref(false)
+const creating = ref(false)
+const inviteModalVisible = ref(false)
+const generating = ref(false)
+const membersModalVisible = ref(false)
+const membersLoading = ref(false)
+const currentOrg = ref<any>(null)
+const members = ref<any[]>([])
+const inviteResult = ref<any>(null)
+const manageModalVisible = ref(false)
+const updating = ref(false)
+const deleting = ref(false)
+
+// 创建组织表单
+const createForm = ref({
+  name: '',
+  description: '',
+  maxMembers: 50,
+  published: false
+})
+
+// 邀请表单
+const inviteForm = ref({
+  role: 'MEMBER',
+  maxUses: 1,
+  expiresAt: null as any
+})
+
+// 管理组织表单
+const manageForm = ref({
+  name: '',
+  description: '',
+  maxMembers: 50,
+  published: false
+})
+
+// 获取组织头像样式
+const getOrgAvatarStyle = (name: string) => {
+  const hash = [...(name || '')].reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  ]
+  return {
+    background: gradients[hash % gradients.length],
+    color: 'white',
+    fontSize: '24px',
+    fontWeight: 'bold'
+  }
 }
 
-// 接口完整响应类型，包含 code、message、data（团队数组）
-interface ApiResponse {
-  code: number;
-  message: string;
-  data: Team[];
+// 加载组织列表
+const loadOrganizations = async () => {
+  loading.value = true
+  try {
+    console.log('开始加载组织列表，类型:', viewType.value)
+    const response = await api.organizationApi.getOrganizedOrganizations()
+    console.log('组织列表响应:', response)
+    
+    if (response.code === 200 && response.data) {
+      let orgs = response.data
+      
+      // 如果是"我管理的团队"，过滤出当前用户拥有的组织
+      if (viewType.value === 'managed') {
+        orgs = orgs.filter((org: any) => org.ownerId === userInfo.value?.id)
+      }
+      
+      organizations.value = orgs.map((org: any) => ({
+        ...org,
+        currentMembers: org.currentMembers || 0,
+        maxMembers: org.maxMembers || 50
+      }))
+      
+      console.log('处理后的组织列表:', organizations.value)
+    } else {
+      Message.error(response.message || '加载组织列表失败')
+      organizations.value = []
+    }
+  } catch (error: any) {
+    console.error('加载组织列表失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '加载组织列表失败'
+    Message.error(errorMessage)
+    organizations.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
-// 新增：控制生成按钮状态
-const isGenerating = ref(false); // 防止重复点击
-const teams = ref<Team[]>([]); // 存储全部团队列表
-const gourpSelectType = ref(true) // 表示true:我的团队，false:我参与的团队
-const showModal = ref(false); // 控制弹窗显示
-const currentTeamId = ref<number | null>(null); // 当前团队 ID
-const inviteCode = ref(""); // 邀请码
-const selectedRole = ref('MEMBER') // userType
-const maxUsage = ref(1) // 最大使用次数
-const expiryDate = ref('') // 截止日期
-const shortLink = ref('') // 短链接
-const qrCodeUrl = ref('') // 二维码链接
-const avatar = ref('') // 用于mock头像
+// 切换视图类型
+const handleViewTypeChange = () => {
+  loadOrganizations()
+}
 
+// 返回
+const goBack = () => {
+  router.back()
+}
 
-/**
- * 根据类型调用不同后端接口
- * */
-const fetchTeams = async () => {
-  try {
-    // 拼接接口地址：根据类型调用不同接口（或同一接口传不同参数）
-    const url = gourpSelectType.value
-        ? "http://localhost:8080/api/organization/organized/manage"  // 我管理的团队接口
-        : "http://localhost:8080/api/organization/organized";  // 我参与的团队接口
-
-    const res = await axios.post<ApiResponse>(
-        url,
-        {},
-        {headers: {
-            Authorization: localStorage.getItem("token")
-          }});
-    console.log('获取团队成功,团队数据为: ', res.data);
-    teams.value = res.data.data; // 直接存储后端返回的对应类型数据
-  } catch (err) {
-    console.error('获取团队失败', err);
-    teams.value = []; // 实现失败之后也要清理之前的数据残余
+// 显示创建组织弹窗
+const showCreateModal = () => {
+  createForm.value = {
+    name: '',
+    description: '',
+    maxMembers: 50,
+    published: false
   }
-};
+  createModalVisible.value = true
+}
 
-/**
- * 切换查询状态后的页面更新
- * */
-// 1. 页面加载时初始化数据
-onMounted(() => {
-  fetchTeams();
-});
-
-// 2. 监听类型变化，重新请求数据
-watch(gourpSelectType, () => {
-  console.log("类型切换：", gourpSelectType.value);
-  fetchTeams(); // 类型切换时，重新新调用接口
-});
-
-
-/**
- * 点击“邀请协作”时触发
- * 获取团队ID，并打开弹窗
- * @param {Number} teamId - 团队 ID
- */
-const showInviteModal = (teamId: number) => {
-  currentTeamId.value = teamId; // 保存团队 ID
-  showModal.value = true; // 打开弹窗
-  console.log("当前团队 ID：", teamId);
-};
-
-/**
- * 生成邀请码并调用接口
- */
-const generateInvite = async () => {
-  // 校验团队 ID 是否存在
-  if (!currentTeamId.value) {
-    console.error("未获取到团队信息");
-    return;
+// 创建组织
+const handleCreateOrganization = async () => {
+  if (!createForm.value.name.trim()) {
+    Message.warning('请输入组织名称')
+    return
   }
 
-  // 禁用按钮，防止重复提交
-  isGenerating.value = true;
-
+  creating.value = true
   try {
-    //序列化前端接收的时间，和后端format保持一致
-    const formattedExpiresAt = dayjs(expiryDate.value).format('YYYY-MM-DDTHH:mm:00');
-    // 调用后端接口
-    const response = await axios.post(
-        "http://localhost:8080/api/organization/invite/create",
-        {
-          organizationId: currentTeamId.value,
-          role: selectedRole.value,
-          maxUses: maxUsage.value,
-          expiresAt: formattedExpiresAt
-        },
-        {
-          headers: {
-            Authorization: localStorage.getItem("token")
-          }
-        }
-    );
-    console.log("接口响应结果为：", response.data);
-    if (response.status != 200) {
-      console.error("生成邀请验证码失败: ", response.data)
-      return ;
+    const response = await api.organizationApi.createOrganization(createForm.value)
+    
+    if (response.code === 200 && response.data) {
+      Message.success('组织创建成功')
+      createModalVisible.value = false
+      await loadOrganizations()
+    } else {
+      Message.error(response.message || '创建组织失败')
     }
+  } catch (error: any) {
+    console.error('创建组织失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '创建组织失败'
+    Message.error(errorMessage)
+  } finally {
+    creating.value = false
+  }
+}
 
-    if (response.data.data != null){
-      const {inviteCode: code, shortUrl: slink, qrCodeUrl: qrcodeurl} = response.data.data;
-      inviteCode.value = code;
-      shortLink.value = slink;
-      qrCodeUrl.value = qrcodeurl;
+// 显示邀请弹窗
+const showInviteModal = (org: any) => {
+  currentOrg.value = org
+  inviteForm.value = {
+    role: 'MEMBER',
+    maxUses: 1,
+    expiresAt: null
+  }
+  inviteResult.value = null
+  inviteModalVisible.value = true
+}
 
-      // 生成成功后，可滚动到结果区域
-      document.querySelector('.result-container')?.scrollIntoView({ behavior: 'smooth' });
+// 关闭邀请弹窗
+const closeInviteModal = () => {
+  inviteModalVisible.value = false
+  inviteResult.value = null
+  currentOrg.value = null
+}
+
+// 生成邀请码
+const handleGenerateInvite = async () => {
+  if (!currentOrg.value) {
+    Message.warning('请选择组织')
+    return
+  }
+
+  generating.value = true
+  try {
+    const data = {
+      organizationId: currentOrg.value.id,
+      role: inviteForm.value.role,
+      maxUses: inviteForm.value.maxUses,
+      expiresAt: inviteForm.value.expiresAt 
+        ? dayjs(inviteForm.value.expiresAt).format('YYYY-MM-DDTHH:mm:ss')
+        : null
     }
+    
+    const response = await api.organizationApi.createInvite(data)
+    console.log('生成邀请码响应:', response)
+    
+    if (response.code === 200 && response.data) {
+      inviteResult.value = response.data
+      Message.success('邀请码生成成功')
+    } else {
+      Message.error(response.message || '生成邀请码失败')
+    }
+  } catch (error: any) {
+    console.error('生成邀请码失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '生成邀请码失败'
+    Message.error(errorMessage)
+  } finally {
+    generating.value = false
+  }
+}
 
+// 复制邀请码
+const copyInviteCode = async () => {
+  if (!inviteResult.value?.inviteCode) return
+  try {
+    await navigator.clipboard.writeText(inviteResult.value.inviteCode)
+    Message.success('邀请码已复制到剪贴板')
   } catch (error) {
-    console.error("失败：", error);
-    alert("生成失败");
-  }finally {
-    // 释放“生成”按钮的点击许可
-    isGenerating.value = false;
+    Message.error('复制失败')
   }
-};
+}
 
-/**
- * 导出PDF方法实现
- * */
-const exportToPDF = async() => {
-  if (!inviteCode.value){
-    alert('请先生成邀请码')
-    return ;
+// 复制短链接
+const copyShortLink = async () => {
+  if (!inviteResult.value?.shortUrl) return
+  try {
+    await navigator.clipboard.writeText(inviteResult.value.shortUrl)
+    Message.success('短链接已复制到剪贴板')
+  } catch (error) {
+    Message.error('复制失败')
   }
-  // 1. 选择将要导出的DOM区域
-  const exportContent = document.querySelector('.result-container')as HTMLElement;
+}
 
-  if(!exportContent){
-    console.error('未找到导出区域')
-    return ;
+// 导出PDF
+const exportToPDF = async () => {
+  if (!inviteResult.value) {
+    Message.warning('请先生成邀请码')
+    return
   }
 
   try {
-    // 2. 将HTML转换成Canvas高清渲染:
+    const exportContent = document.querySelector('.invite-result') as HTMLElement
+    if (!exportContent) {
+      Message.error('未找到导出内容')
+      return
+    }
+
     const canvas = await html2canvas(exportContent, {
       scale: 2,
       useCORS: true,
-    }) ;
-    // 3. 初始化pdf的展示尺寸
+    })
+
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
-    });
-    // 4. 计算Canvas在PDF当中的占用尺寸:
-    const imgWigth = 210 // 基本A4纸张宽度(mm)
-    const imgHeight = canvas.height * (imgWigth / canvas.width)
-    // 5. 将Canvas内容添加到PDF中
-    pdf.addImage(canvas.toDataURL('img/jpeg', 0.95),
-        'JPEG',
-        10,
-        10,
-        imgWigth,
-        imgHeight
-    );
-    // 6.保存PDF文件
-    pdf.save(`团队邀请二维码pdf文件:_${inviteCode.value}.pdf`);
-    alert("PDF导出成功！");
+    })
+
+    const imgWidth = 210
+    const imgHeight = canvas.height * (imgWidth / canvas.width)
+
+    pdf.addImage(
+      canvas.toDataURL('image/jpeg', 0.95),
+      'JPEG',
+      10,
+      10,
+      imgWidth,
+      imgHeight
+    )
+
+    pdf.save(`团队邀请二维码_${inviteResult.value.inviteCode}.pdf`)
+    Message.success('PDF导出成功')
   } catch (error) {
-    console.error("PDF导出失败：", error);
-    alert("PDF导出失败,请重试...");
+    console.error('PDF导出失败:', error)
+    Message.error('PDF导出失败，请重试')
   }
-};
+}
 
+// 查看成员
+const viewMembers = async (org: any) => {
+  currentOrg.value = org
+  membersModalVisible.value = true
+  membersLoading.value = true
+  
+  try {
+    const response = await api.organizationApi.getOrganizationMembers(org.id)
+    
+    if (response.code === 200 && response.data) {
+      members.value = response.data
+    } else {
+      Message.error(response.message || '加载成员列表失败')
+      members.value = []
+    }
+  } catch (error: any) {
+    console.error('加载成员列表失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '加载成员列表失败'
+    Message.error(errorMessage)
+    members.value = []
+  } finally {
+    membersLoading.value = false
+  }
+}
 
+// 管理组织
+const manageOrganization = (org: any) => {
+  currentOrg.value = org
+  manageModalVisible.value = true
+  manageForm.value = {
+    name: org.name,
+    description: org.description || '',
+    maxMembers: org.maxMembers || 50,
+    published: org.published || false
+  }
+}
 
-/**
- * 关闭弹窗
- */
-const closeModal = () => {
-  showModal.value = false;
-  inviteCode.value = "";
-};
+// 更新组织
+const handleUpdateOrganization = async () => {
+  if (!currentOrg.value) return
+  
+  if (!manageForm.value.name.trim()) {
+    Message.warning('请输入组织名称')
+    return
+  }
+
+  updating.value = true
+  try {
+    const response = await api.organizationApi.updateOrganization(currentOrg.value.id, manageForm.value)
+    
+    if (response.code === 200 && response.data) {
+      Message.success('组织更新成功')
+      manageModalVisible.value = false
+      await loadOrganizations()
+    } else {
+      Message.error(response.message || '更新组织失败')
+    }
+  } catch (error: any) {
+    console.error('更新组织失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '更新组织失败'
+    Message.error(errorMessage)
+  } finally {
+    updating.value = false
+  }
+}
+
+// 删除组织
+const handleDeleteOrganization = async () => {
+  if (!currentOrg.value) return
+  
+  deleting.value = true
+  try {
+    const response = await api.organizationApi.deleteOrganization(currentOrg.value.id)
+    
+    if (response.code === 200) {
+      Message.success('组织删除成功')
+      manageModalVisible.value = false
+      await loadOrganizations()
+    } else {
+      Message.error(response.message || '删除组织失败')
+    }
+  } catch (error: any) {
+    console.error('删除组织失败:', error)
+    const errorMessage = error.response?.data?.message || error.message || '删除组织失败'
+    Message.error(errorMessage)
+  } finally {
+    deleting.value = false
+  }
+}
+
+// 生命周期
+onMounted(() => {
+  loadOrganizations()
+})
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-
-.org-page {
-  min-height: 100vh;
-  padding: 32px;
-  background: linear-gradient(to right, #f5f0ff, #ece6ff);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.top-bar {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.gradient-button {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  padding: 0.5em 1.1em;
-  color: white;
-  background: #2563eb;
-  border: none;
-  border-radius: 999em;
-  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.08);
-  cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
-}
-.gradient-button svg {
-  margin-right: 6px;
-}
-.gradient-button .text {
-  margin-left: 2px;
-}
-
-.team-card-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  justify-content: center;
-  max-width: 1400px;
-  width: 100%;
-}
-
-.team-card {
-  width: 340px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.06);
+.org-management-page {
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-.team-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.12);
+  min-height: calc(100vh - 48px);
+  background: #f7f8fa;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.team-info {
-  display: flex;
-  align-items: center;
-}
-.team-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  margin-right: 14px;
-  object-fit: cover;
-}
-.team-meta {
-  display: flex;
-  flex-direction: column;
-}
-.team-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-.team-desc {
-  font-size: 13px;
-  color: #777;
-  margin-top: 4px;
-}
-.member-count {
-  font-size: 13px;
-  color: #666;
-  margin-top: 6px;
+.header-card {
+  margin-bottom: 24px;
 }
 
-.card-footer.alt {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
+:deep(.header-card .arco-card-body) {
+  padding: 16px 20px;
 }
 
-.new-action-btn {
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 50px;
-  cursor: pointer;
-  border: 0;
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-size: 12px;
-  font-weight: 600;
+.org-card {
   transition: all 0.3s ease;
-  white-space: nowrap;
+  height: 100%;
 }
 
-.invite:hover {
-  letter-spacing: 2px;
-  background-color: #2563eb;
-  color: white;
-  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
-}
-.learn:hover {
-  letter-spacing: 2px;
-  background-color: #1d4ed8;
-  color: white;
-  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
-}
-.manage:hover {
-  letter-spacing: 2px;
-  background-color: #93c5fd;
-  color: #1d4ed8;
-  box-shadow: rgba(2, 6, 23, 0.12) 7px 29px ;
+.org-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.new-action-btn:active {
-  transform: translateY(4px);
-  transition: 100ms;
-  box-shadow: none;
-}
-
-/* 更新后的模态框样式 */
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 450px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 32px rgba(124, 100, 255, 0.2);
+.org-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 24px;
-  z-index: 9999;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #4e3ca9;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.select-wrapper,
-.input-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-  width: 100%;
-}
-
-.role-select,
-.input {
-  width: 100%;
-  height: 48px;
-  padding: 0 1.5rem;
-  padding-left: 3rem;
-  border: 2px solid #f0ebff;
-  border-radius: 10px;
-  outline: none;
-  background-color: #f8fafc;
-  color: #0d0c22;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.role-select {
-  appearance: none;
-  cursor: pointer;
-}
-
-.input::placeholder {
-  color: #94a3b8;
-}
-
-.input:focus,
-.input:hover,
-.role-select:focus,
-.role-select:hover {
-  outline: none;
-  border-color: #7e68ff;
-  background-color: #fff;
-  box-shadow: 0 0 0 4px rgba(126, 104, 255, 0.1);
-}
-
-.result-container {
-  margin-top: 16px;
-}
-
-.invite-code-container,
-.short-link-container {
-  background: #f5f0ff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.invite-code-label,
-.short-link-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #4e3ca9;
-  margin-right: 8px;
-}
-
-.invite-code {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.short-link {
-  font-size: 14px; /* 适当放大字体提升可读性 */
-  font-weight: 600; /* 加粗字体增强视觉突出度 */
-  color: #333333; /* 深黑色，比纯黑更柔和不刺眼 */
-  word-break: break-all; /* 保留原有换行功能 */
-}
-.success-message {
-  font-size: 13px;
-  color: #666;
-  text-align: center;
-  margin: 16px 0;
-}
-
-.qr-code-placeholder {
-  margin: 20px 0;
-  display: flex;
-  justify-content: center;
-}
-
-.qr-code-container {
-  width: 180px;
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f0ff;
-  border-radius: 12px;
+:deep(.org-card .arco-card-body) {
   padding: 16px;
 }
 
-.qr-code {
-  width: 100%;
-  height: 100%;
-  background: white;
-  border: 1px dashed #c3baff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #7e68ff;
-  font-size: 14px;
+:deep(.org-card .arco-card-actions) {
+  padding: 12px 16px;
+  border-top: 1px solid #f2f3f5;
 }
 
-.qr-hint {
-  text-align: center;
-  color: #7e68ff;
-  font-weight: 500;
-}
-
-.modal--footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.cancel-btn,
-.generate-btn {
-  flex: 1;
-  padding: 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.cancel-btn {
-  background: #f0ebff;
-  color: #4e3ca9;
-  border: none;
-}
-
-.cancel-btn:hover {
-  background: #e0d6ff;
-}
-
-.generate-btn {
-  background: linear-gradient(90deg, #7e68ff, #c3baff);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(126, 104, 255, 0.3);
-}
-
-.generate-btn:hover {
-  background: linear-gradient(90deg, #6d58e8, #b2a5ff);
-}
-
-.export-btn {
-  width: 100%;
-  padding: 12px;
+.invite-result {
   margin-top: 16px;
-  background: transparent;
-  border: 1px solid #7e68ff;
-  color: #7e68ff;
+  padding: 16px;
+  background: #f7f8fa;
   border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.export-btn:hover {
-  background: rgba(126, 104, 255, 0.1);
-}
-
-.emoji-icon {
-  position: absolute;
-  left: 16px;
-  z-index: 10;
-  font-size: 18px;
-}
-
-/* Adjust padding for inputs with emoji */
-.select-wrapper,
-.input-wrapper {
-  position: relative;
-}
-
-.role-select,
-.input {
-  padding-left: 46px !important; /* Make room for emoji */
-}
-
-/*选择团队查看方式的样式内容: */
-.top-bar {
-  width: 100%;
-  display: flex;
-  align-items: center; /* 垂直居中对齐 */
-  justify-content: flex-start; /* 整体靠左 */
-  gap: 24px; /* 返回按钮与筛选按钮组的间距 */
-  margin-bottom: 20px;
-}
-
-/* 新增：筛选按钮容器，用 Flex 控制按钮水平排列 */
-.top-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px; /* 按钮之间的间距 */
-}
-
-/* 筛选按钮基础样式：继承整体配色，简洁大气 */
-.filter-btn {
-  background: linear-gradient(90deg, #7e68ff, #c3baff);
-  color: white;
-  font-size: 14px;
-  padding: 0.5em 1em;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(126, 104, 255, 0.3);
-}
-
-/* 激活态样式：保持原有逻辑，可微调 */
-.filter-btn.active {
-  background: linear-gradient(90deg, #6d58e8, #b2a5ff);
-  box-shadow: 0 4px 12px rgba(126, 104, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-/*  hover 动画：与整体风格统一，轻量位移+阴影 */
-.filter-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(126, 104, 255, 0.4);
-}
-
-/* 点击动画：还原位移，保持简洁 */
-.filter-btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 6px rgba(126, 104, 255, 0.3);
+/* 响应式 */
+@media (max-width: 768px) {
+  .org-management-page {
+    padding: 16px;
+  }
 }
 </style>

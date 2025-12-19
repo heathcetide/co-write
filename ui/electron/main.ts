@@ -16,11 +16,16 @@ const VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(APP_ROOT, 'public') : RENDER
 let win: BrowserWindow | null = null
 
 function createWindow() {
+  // 获取图标路径
+  const iconPath = VITE_DEV_SERVER_URL 
+    ? path.join(APP_ROOT, 'src', 'assets', 'electron-vite.png')
+    : path.join(VITE_PUBLIC, 'electron-vite.png')
+  
   win = new BrowserWindow({
     width: 1300,
     height: 800,
     autoHideMenuBar: true,
-    icon: path.join(VITE_PUBLIC, 'electron-vite.png'),
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,

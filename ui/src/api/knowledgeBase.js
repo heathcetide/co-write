@@ -30,3 +30,19 @@ export const updateKnowledgeBase = (data) => {
 export const getOrganizationKnowledgeBases = (organizationId) => {
     return request.get(`/knowledge-base/getOrganizationKnowledgeBases/${organizationId}`);
 };
+
+/**
+ * 根据ID获取知识库详情
+ * @param {number|string} id - 知识库ID
+ */
+export const getKnowledgeBaseById = (id) => {
+    return request.get(`/knowledge-base/${id}`);
+};
+
+/**
+ * 删除知识库
+ * @param {number|string} id - 知识库ID
+ */
+export const deleteKnowledgeBase = (id) => {
+    return request.delete(`/knowledge-base/${id}`);
+};

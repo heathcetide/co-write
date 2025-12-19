@@ -128,4 +128,72 @@ public class OrganizationController {
         Organization createdOrg = organizationService.createOrganization(organization, currentUser);
         return ApiResponse.success(createdOrg);
     }
+
+    /**
+     * 根据ID获取组织详情
+     */
+    @ApiOperation("根据ID获取组织详情")
+    @GetMapping("/{id}")
+    public ApiResponse<Organization> getOrganizationById(@PathVariable Long id) {
+        Organization organization = organizationService.getById(id);
+        if (organization == null || Boolean.TRUE.equals(organization.getDeleted())) {
+            return ApiResponse.error("组织不存在或已被删除");
+        }
+        return ApiResponse.success(organization);
+    }
+
+    /**
+     * 更新组织信息
+     */
+    @ApiOperation("更新组织信息")
+    @PutMapping("/{id}")
+    public ApiResponse<Organization> updateOrganization(
+            @PathVariable Long id,
+            @RequestBody Organization organization) {
+        User currentUser = userService.getCurrentUser();
+        
+        Organization existingOrg = organizationService.getById(id);
+        if (existingOrg == null || Boolean.TRUE.equals(existingOrg.getDeleted())) {
+            return ApiResponse.error("组织不存在或已被删除");
+        }
+        
+        // 只有组织所有者可以更新
+        if (!existingOrg.getOwnerId().equals(currentUser.getId())) {
+            return ApiResponse.error("无权修改此组织，只有组织所有者可以修改");
+        }
+        
+        organization.setId(id);
+        organization.setOwnerId(existingOrg.getOwnerId()); // 保持原有ownerId
+        boolean updated = organizationService.updateById(organization);
+        if (!updated) {
+            return ApiResponse.error("更新组织失败");
+        }
+        return ApiResponse.success(organizationService.getById(id));
+    }
+
+    /**
+     * 删除组织（逻辑删除）
+     */
+    @ApiOperation("删除组织（逻辑删除）")
+    @DeleteMapping("/{id}")
+    public ApiResponse<Boolean> deleteOrganization(@PathVariable Long id) {
+        User currentUser = userService.getCurrentUser();
+        
+        Organization organization = organizationService.getById(id);
+        if (organization == null || Boolean.TRUE.equals(organization.getDeleted())) {
+            return ApiResponse.error("组织不存在或已被删除");
+        }
+        
+        // 只有组织所有者可以删除
+        if (!organization.getOwnerId().equals(currentUser.getId())) {
+            return ApiResponse.error("无权删除此组织，只有组织所有者可以删除");
+        }
+        
+        organization.setDeleted(true);
+        boolean updated = organizationService.updateById(organization);
+        if (!updated) {
+            return ApiResponse.error("删除组织失败");
+        }
+        return ApiResponse.success(true);
+    }
 }

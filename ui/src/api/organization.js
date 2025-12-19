@@ -10,10 +10,28 @@ export const getOrganizationListQuickly = () => {
 
 /**
  * 获取当前用户参与的组织列表
- * 对应后端 /organized 接口
+ * 对应后端 /organized 接口（GET方法）
  */
 export const getOrganizedOrganizations = () => {
-    return request.post('/organization/organized');
+    return request.get('/organization/organized');
+};
+
+/**
+ * 创建组织邀请码
+ * 对应后端 /organization/invite/create 接口
+ * @param {Object} data - 包含 organizationId, role, maxUses, expiresAt
+ */
+export const createInvite = (data) => {
+    return request.post('/organization/invite/create', data);
+};
+
+/**
+ * 创建组织
+ * 对应后端 /organization/create 接口
+ * @param {Object} data - 包含 name, description, published, maxMembers
+ */
+export const createOrganization = (data) => {
+    return request.post('/organization/create', data);
 };
 
 /**
@@ -55,4 +73,32 @@ export const setMemberRole = (organizationId, userId, role) => {
  */
 export const removeOrganizationMember = (organizationId, userId) => {
     return request.delete(`/organization/${organizationId}/member/${userId}`);
+};
+
+/**
+ * 根据ID获取组织详情
+ * 对应后端 /organization/{id} 接口
+ * @param {number|string} id - 组织ID
+ */
+export const getOrganizationById = (id) => {
+    return request.get(`/organization/${id}`);
+};
+
+/**
+ * 更新组织信息
+ * 对应后端 /organization/{id} 接口（PUT方法）
+ * @param {number|string} id - 组织ID
+ * @param {Object} data - 要更新的组织信息
+ */
+export const updateOrganization = (id, data) => {
+    return request.put(`/organization/${id}`, data);
+};
+
+/**
+ * 删除组织（逻辑删除）
+ * 对应后端 /organization/{id} 接口（DELETE方法）
+ * @param {number|string} id - 组织ID
+ */
+export const deleteOrganization = (id) => {
+    return request.delete(`/organization/${id}`);
 };

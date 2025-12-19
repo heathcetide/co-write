@@ -23,10 +23,12 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper,Kn
      * */
     @Override
     public List<OrgKnowledgeBaseVO> getOrganizationKnowledgeBases(Long organizationId){
-        //查询组织下的所有知识库
-        List<KnowledgeBase> knowledgeBaseList = this.list(new QueryWrapper<KnowledgeBase>().eq("organization_id", organizationId));
+        //查询组织下的所有未删除的知识库
+        List<KnowledgeBase> knowledgeBaseList = this.list(new QueryWrapper<KnowledgeBase>()
+                .eq("organization_id", organizationId)
+                .eq("deleted", false));
         if (knowledgeBaseList.isEmpty()){
-            return null;
+            return new ArrayList<>();
         }
         // 初始化一个列表用于存放封装后的VO对象
         List<OrgKnowledgeBaseVO> orgKnowledgeBaseVOList = new ArrayList<>();
@@ -53,7 +55,9 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper,Kn
      */
     @Override
     public List<KnowledgeBase> getKnowledgeBaseByOwnerId(Long currentUserId) {
-        return this.list(new QueryWrapper<KnowledgeBase>().eq("owner_id", currentUserId));
+        return this.list(new QueryWrapper<KnowledgeBase>()
+                .eq("owner_id", currentUserId)
+                .eq("deleted", false));
     }
 
     /**

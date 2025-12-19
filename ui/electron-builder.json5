@@ -11,10 +11,12 @@
     "dist",
     "dist-electron"
   ],
+  "icon": "src/assets/electron-vite.png",
   "mac": {
     "target": [
       "dmg"
     ],
+    "icon": "src/assets/electron-vite.png",
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
   },
   "win": {
@@ -26,6 +28,7 @@
         ]
       }
     ],
+    "icon": "src/assets/electron-vite.png",
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
   },
   "nsis": {

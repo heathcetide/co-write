@@ -246,11 +246,27 @@
             @click="selectRepository(repo)"
         >
           <template #actions>
-            <a-button type="text" size="small">
-              <template #icon>
-                <icon-more />
+            <a-dropdown trigger="click" @select="(key) => handleRepoAction(key, repo)">
+              <a-button type="text" size="small" @click.stop>
+                <template #icon>
+                  <icon-more />
+                </template>
+              </a-button>
+              <template #content>
+                <a-doption key="edit" value="edit">
+                  <template #icon>
+                    <icon-edit />
+                  </template>
+                  重命名
+                </a-doption>
+                <a-doption key="delete" value="delete" class="danger-option">
+                  <template #icon>
+                    <icon-delete />
+                  </template>
+                  删除
+                </a-doption>
               </template>
-            </a-button>
+            </a-dropdown>
           </template>
           <a-list-item-meta>
             <template #avatar>
@@ -278,6 +294,31 @@
           show-word-limit
       />
     </a-modal>
+
+    <!-- 编辑知识库弹窗 -->
+    <a-modal
+        v-model:visible="isEditModalVisible"
+        title="重命名知识库"
+        @ok="handleUpdateRepository"
+        @cancel="isEditModalVisible = false"
+    >
+      <a-input
+          v-model="editRepoName"
+          placeholder="请输入知识库名称"
+          :max-length="50"
+          show-word-limit
+      />
+    </a-modal>
+
+    <!-- 删除确认弹窗 -->
+    <a-modal
+        v-model:visible="isDeleteModalVisible"
+        title="删除知识库"
+        @ok="handleDeleteRepository"
+        @cancel="isDeleteModalVisible = false"
+    >
+      <p>确定要删除知识库 "{{ currentEditRepo?.name }}" 吗？此操作不可恢复。</p>
+    </a-modal>
   </aside>
 </template>
 
@@ -298,8 +339,11 @@ import {
   IconApps,
   IconMore,
   IconGift,
-  IconPoweroff
+  IconPoweroff,
+  IconEdit,
+  IconDelete
 } from '@arco-design/web-vue/es/icon'
+import { Message, Modal } from '@arco-design/web-vue'
 
 /**
  * 组织数据结构定义
@@ -350,7 +394,11 @@ const collapsed = ref(false) // 侧边栏折叠状态
 const showUserPanel = ref(false) // 用户面板显示状态
 const selectedMenuItem = ref('startCreate') // 当前选中的菜单项
 const isCreateModalVisible = ref(false) // 知识库创建弹窗显示状态
+const isEditModalVisible = ref(false) // 知识库编辑弹窗显示状态
+const isDeleteModalVisible = ref(false) // 知识库删除确认弹窗显示状态
 const newRepoName = ref('') // 新知识库名称
+const editRepoName = ref('') // 编辑知识库名称
+const currentEditRepo = ref<Repo | null>(null) // 当前编辑的知识库
 const repositories = ref<Repo[]>([]) // 知识库列表
 const showOrgTooltip = ref(false) // 组织工具提示显示状态
 const currentOrgId = ref(0) // 当前组织ID
@@ -467,15 +515,98 @@ const loadRepositories = async () => {
  * 创建新知识库
  */
 const handleCreateRepository = async () => {
-  if (!newRepoName.value.trim()) return
+  if (!newRepoName.value.trim()) {
+    Message.warning('请输入知识库名称')
+    return
+  }
 
   try {
     await api.knowledgeBaseApi.createPersonalKnowledgeBase({ name: newRepoName.value })
     newRepoName.value = ''
     isCreateModalVisible.value = false
     await loadRepositories()
-  } catch (err) {
+    Message.success('知识库创建成功')
+  } catch (err: any) {
     console.error('创建知识库失败', err)
+    Message.error(err.message || '创建知识库失败')
+  }
+}
+
+/**
+ * 处理知识库操作（编辑/删除）
+ */
+const handleRepoAction = (action: string, repo: Repo) => {
+  if (action === 'edit') {
+    currentEditRepo.value = repo
+    editRepoName.value = repo.name
+    isEditModalVisible.value = true
+  } else if (action === 'delete') {
+    currentEditRepo.value = repo
+    isDeleteModalVisible.value = true
+  }
+}
+
+/**
+ * 更新知识库
+ */
+const handleUpdateRepository = async () => {
+  if (!currentEditRepo.value || !editRepoName.value.trim()) {
+    Message.warning('请输入知识库名称')
+    return
+  }
+
+  try {
+    const response = await api.knowledgeBaseApi.updateKnowledgeBase({
+      id: currentEditRepo.value.id,
+      name: editRepoName.value
+    })
+    
+    // 检查响应是否成功
+    if (response.code === 200 || response.code === undefined) {
+      isEditModalVisible.value = false
+      currentEditRepo.value = null
+      editRepoName.value = ''
+      await loadRepositories()
+      Message.success('知识库更新成功')
+    } else {
+      // 显示后端返回的错误消息
+      Message.error(response.message || '更新知识库失败')
+    }
+  } catch (err: any) {
+    console.error('更新知识库失败', err)
+    // 处理错误响应
+    const errorMessage = err.response?.data?.message || err.message || err.data?.message || '更新知识库失败'
+    Message.error(errorMessage)
+  }
+}
+
+/**
+ * 删除知识库
+ */
+const handleDeleteRepository = async () => {
+  if (!currentEditRepo.value) return
+
+  try {
+    const response = await api.knowledgeBaseApi.deleteKnowledgeBase(currentEditRepo.value.id)
+    
+    // 检查响应是否成功
+    if (response.code === 200 || response.code === undefined) {
+      isDeleteModalVisible.value = false
+      const deletedRepo = currentEditRepo.value
+      currentEditRepo.value = null
+      await loadRepositories()
+      Message.success('知识库删除成功')
+      // 如果删除的是当前选中的知识库，清空选中状态
+      // 这里可以根据需要添加逻辑
+    } else {
+      // 显示后端返回的错误消息
+      Message.error(response.message || '删除知识库失败')
+    }
+  } catch (err: any) {
+    console.error('删除知识库失败', err)
+    // 处理错误响应
+    const errorMessage = err.response?.data?.message || err.message || err.data?.message || '删除知识库失败'
+    Message.error(errorMessage)
   }
 }
 
@@ -1238,6 +1369,15 @@ onMounted(() => {
 
 :deep(.repo-list .arco-list-item:hover .repo-name) {
   color: #165dff;
+}
+
+:deep(.danger-option) {
+  color: #f53f3f;
+}
+
+:deep(.danger-option:hover) {
+  background-color: #fff2f0;
+  color: #f53f3f;
 }
 
 .user-panel-wrapper {
