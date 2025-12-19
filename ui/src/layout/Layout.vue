@@ -119,11 +119,15 @@ function openRepoSelector() {
   display: flex;
   flex-direction: column;
   margin: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .container {
   display: flex;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 nav ul {
@@ -144,6 +148,27 @@ nav ul li:hover {
   flex: 1;
   padding: 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  height: 100%;
+}
+
+/* 自定义滚动条样式 */
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: #f2f3f5;
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #c9cdd4;
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #86909c;
 }
 </style> 

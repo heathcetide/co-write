@@ -21,6 +21,7 @@ declare module 'vue' {
     Header: typeof import('./src/components/Header.vue')['default']
     IconMdiChevronLeft: typeof import('~icons/mdi/chevron-left')['default']
     IconMdiChevronRight: typeof import('~icons/mdi/chevron-right')['default']
+    IconRight: typeof import('~icons/ri/ght')['default']
     Input: typeof import('./src/components/Input.vue')['default']
     LeftSidebar: typeof import('./src/components/LeftSidebar.vue')['default']
     Live2d: typeof import('./src/components/live2d/index.vue')['default']

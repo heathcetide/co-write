@@ -50,8 +50,7 @@ instance.interceptors.request.use(
         return config;
     },
     error => {
-        // 请求错误时显示通知
-        notify.error('请求失败，请检查网络或重试');
+        // 移除请求错误时的通知
         return Promise.reject(error);
     }
 );
@@ -59,13 +58,7 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
     response => {
-        if (response.data && response.data.success) {
-            // 如果服务器返回的结果表示成功
-            notify.success(response.data.message || '操作成功');
-        } else {
-            // 如果返回的结果有问题，显示警告
-            notify.warning(response.data.message || '警告：操作可能有问题');
-        }
+        // 移除自动显示的成功/警告通知
         return response.data;
     },
     error => {
@@ -73,27 +66,14 @@ instance.interceptors.response.use(
             const status = error.response.status;
             if (status === 401) {
                 // 401: 未授权，令牌过期或无效
-                notify.error('令牌无效或已过期，请重新登录');
                 // 清除 token，并且跳转到登录页面
                 localStorage.removeItem('token');
                 // 根据需要，你可以使用以下代码进行重定向到登录页面（例如使用 react-router）
                 window.location.href = '/login'; // 假设你有一个 /login 路由
-            } else if (status === 403) {
-                // 403: 禁止访问
-                notify.error('您没有权限访问此资源');
-            } else if (status === 404) {
-                // 404: 资源未找到
-                notify.error('请求的资源未找到');
-            } else if (status === 500) {
-                // 500: 服务器错误
-                notify.error('服务器内部错误，请稍后再试');
-            } else {
-                // 其他错误
-                notify.error('请求失败，请重试');
             }
-        } else {
-            notify.error('网络错误，请检查网络连接');
+            // 移除其他错误状态的 toast 通知
         }
+        // 移除网络错误的 toast 通知
         return Promise.reject(error);
     }
 );

@@ -7,169 +7,277 @@
     </div>
 
     <!-- 用户信息卡片 -->
-    <div
-        class="user-panel-wrapper"
-        @mouseenter="onUserMouseEnter"
-        @mouseleave="onUserMouseLeave"
-    >
-      <div class="user-org-card">
-        <div class="user-org">
-          <div class="avatar" :style="avatarStyle">
-            <span class="avatar-text">{{ avatarText }}</span>
-          </div>
-          <div class="user-meta" v-if="!collapsed">
-            <div class="nickname"><User class="inline-icon" /> {{ userInfo?.username }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 用户信息面板 -->
-      <transition name="fade">
-        <div class="user-panel" v-show="showUserPanel">
-          <div class="panel-header">
-            <h3>{{ userInfo?.username }}</h3>
-            <p class="user-type">普通用户，购买可享更多权益</p>
-            <button class="upgrade-btn">购买</button>
-          </div>
-          <div class="panel-divider"></div>
-          <ul class="panel-menu">
-            <li class="panel-item" @click="goToCreationCenter">创作中心</li>
-            <li class="panel-item" @click="goToSettings">设置</li>
-            <li class="panel-item" @click="logout">退出登录</li>
-          </ul>
-        </div>
-      </transition>
-    </div>
-
-    <!-- 组织信息栏 -->
-    <div
-        class="org-info-wrapper"
-        @mouseenter="onOrgMouseEnter"
-        @mouseleave="onOrgMouseLeave"
+    <a-popover
+        v-model:popup-visible="showUserPanel"
+        trigger="hover"
+        position="right"
+        :content-style="{ padding: 0, borderRadius: '12px' }"
         v-if="!collapsed"
     >
-      <div class="org-info-card">
-        <i class="iconfont icon-organization"></i>
-        <span class="org-prefix"><strong>当前所属的组织 :  </strong></span>
-        <span class="org-name"><strong>{{ currentOrg?.name || ''}}</strong></span>
-        <i class="iconfont icon-chevron-right"></i>
-        <div class="card-decoration"></div>
+      <template #content>
+        <div class="user-panel">
+          <div class="panel-header">
+            <a-avatar :size="48" :style="avatarStyle" class="panel-avatar">
+              {{ avatarText }}
+            </a-avatar>
+            <a-typography-title :heading="6" class="panel-username">{{ userInfo?.username }}</a-typography-title>
+            <a-typography-text type="secondary" class="user-type">普通用户，购买可享更多权益</a-typography-text>
+            <a-button type="primary" long class="upgrade-btn" @click="goToCreationCenter">
+              <template #icon>
+                <icon-gift />
+              </template>
+              升级会员
+            </a-button>
+          </div>
+          <a-divider margin="0" />
+          <a-menu :style="{ border: 'none', boxShadow: 'none', background: 'transparent' }" class="panel-menu">
+            <a-menu-item @click="goToCreationCenter">
+              <template #icon>
+                <icon-apps />
+              </template>
+              创作中心
+            </a-menu-item>
+            <a-menu-item @click="goToSettings">
+              <template #icon>
+                <icon-settings />
+              </template>
+              设置
+            </a-menu-item>
+            <a-menu-item @click="logout">
+              <template #icon>
+                <icon-poweroff />
+              </template>
+              退出登录
+            </a-menu-item>
+          </a-menu>
+        </div>
+      </template>
+      <a-card class="user-org-card" :bordered="false" :hoverable="true" :body-style="{ padding: '12px' }">
+        <a-space :size="12" align="center">
+          <a-avatar :size="42" :style="avatarStyle" class="user-avatar">
+            {{ avatarText }}
+          </a-avatar>
+          <div class="user-meta">
+            <a-typography-text class="nickname" strong>{{ userInfo?.username }}</a-typography-text>
+            <a-typography-text type="secondary" class="user-role">普通用户</a-typography-text>
+          </div>
+        </a-space>
+      </a-card>
+    </a-popover>
+    
+    <!-- 折叠状态下的用户头像 -->
+    <a-popover
+        v-if="collapsed"
+        v-model:popup-visible="showUserPanel"
+        trigger="hover"
+        position="right"
+        :content-style="{ padding: 0, borderRadius: '12px' }"
+    >
+      <template #content>
+        <div class="user-panel">
+          <div class="panel-header">
+            <a-avatar :size="48" :style="avatarStyle" class="panel-avatar">
+              {{ avatarText }}
+            </a-avatar>
+            <a-typography-title :heading="6" class="panel-username">{{ userInfo?.username }}</a-typography-title>
+            <a-typography-text type="secondary" class="user-type">普通用户，购买可享更多权益</a-typography-text>
+            <a-button type="primary" long class="upgrade-btn" @click="goToCreationCenter">
+              <template #icon>
+                <icon-gift />
+              </template>
+              升级会员
+            </a-button>
+          </div>
+          <a-divider margin="0" />
+          <a-menu :style="{ border: 'none', boxShadow: 'none', background: 'transparent' }" class="panel-menu">
+            <a-menu-item @click="goToCreationCenter">
+              <template #icon>
+                <icon-apps />
+              </template>
+              创作中心
+            </a-menu-item>
+            <a-menu-item @click="goToSettings">
+              <template #icon>
+                <icon-settings />
+              </template>
+              设置
+            </a-menu-item>
+            <a-menu-item @click="logout">
+              <template #icon>
+                <icon-poweroff />
+              </template>
+              退出登录
+            </a-menu-item>
+          </a-menu>
+        </div>
+      </template>
+      <div class="collapsed-user-avatar">
+        <a-avatar :size="36" :style="avatarStyle">
+          {{ avatarText }}
+        </a-avatar>
       </div>
+    </a-popover>
 
-      <!-- 组织工具提示 -->
-      <transition name="tooltip-slide">
-        <div class="org-tooltip" v-show="showOrgTooltip">
-          <div class="tooltip-content">
-            <!-- 组织管理中心入口 -->
-            <div class="tooltip-header" @click="goToOrgManagement">
-              <i class="iconfont icon-setting"></i>
-              <span>进入组织管理中心</span>
-              <!-- 交互图标 -->
-              <div class="header-action">
-                <i class="iconfont icon-external-link"></i>
-                <i class="iconfont icon-arrow-right"></i>
-              </div>
-            </div>
+    <!-- 组织信息栏 -->
+    <a-popover
+        v-model:popup-visible="showOrgTooltip"
+        trigger="hover"
+        position="right"
+        :content-style="{ padding: 0, width: '300px', borderRadius: '12px' }"
+        v-if="!collapsed"
+        @popup-visible-change="(visible) => { if (visible) getOrganizationListQuickly() }"
+    >
+      <template #content>
+        <div class="org-tooltip-content">
+          <!-- 组织管理中心入口 -->
+          <div class="tooltip-header-wrapper">
+            <a-button type="primary" long class="tooltip-header" @click="goToOrgManagement">
+              <template #icon>
+                <icon-settings />
+              </template>
+              进入组织管理中心
+            </a-button>
+          </div>
 
-            <!-- 可滚动组织列表 -->
-            <div class="org-list-container" @wheel.prevent="handleScroll">
-              <div
+          <!-- 可滚动组织列表 -->
+          <div class="org-list-container" @wheel.prevent="handleScroll">
+            <a-list :bordered="false" :split="false">
+              <a-list-item
                   v-for="org in visibleOrgs"
                   :key="org.id"
-                  class="org-item"
-                  :class="{ active: org.id === currentOrgId }"
+                  :class="{ 'org-item-active': org.id === currentOrgId }"
                   @click="switchOrg(org)"
+                  class="org-item"
               >
-                <i class="iconfont icon-org"></i>
-                <span class="org-item-name">{{ org.name }}</span>
-                <span class="org-item-meta">{{ org.currentMembers }}人</span>
-              </div>
-              <div class="scroll-indicator" v-if="showScrollIndicator">
-                <i class="iconfont icon-chevron-down"></i>
-              </div>
+                <template #actions>
+                  <a-tag size="small" color="blue">{{ org.currentMembers }}人</a-tag>
+                </template>
+                <a-list-item-meta>
+                  <template #avatar>
+                    <a-avatar :size="32" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                      <icon-home />
+                    </a-avatar>
+                  </template>
+                  <template #title>
+                    <a-typography-text strong class="org-item-name">{{ org.name }}</a-typography-text>
+                  </template>
+                </a-list-item-meta>
+              </a-list-item>
+            </a-list>
+            <div class="scroll-indicator" v-if="showScrollIndicator">
+              <icon-down />
             </div>
           </div>
-          <div class="tooltip-arrow"></div>
         </div>
-      </transition>
-    </div>
+      </template>
+      <a-card class="org-info-card" :bordered="false" :hoverable="true" :body-style="{ padding: '12px' }">
+        <a-space :size="8" align="center">
+          <a-avatar :size="28" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <icon-home />
+          </a-avatar>
+          <div class="org-info-content" v-if="!collapsed">
+            <a-typography-text type="secondary" class="org-prefix">当前组织</a-typography-text>
+            <a-typography-text strong class="org-name">{{ currentOrg?.name || '未选择' }}</a-typography-text>
+          </div>
+          <icon-right class="org-arrow" />
+        </a-space>
+      </a-card>
+    </a-popover>
 
     <!-- 搜索框 -->
-    <div class="search-container" v-if="!collapsed">
-      <div class="search-wrapper">
-        <i class="iconfont icon-search"></i>
-        <input
-            type="text"
-            placeholder="搜索 Ctrl+J"
-            class="search-input"
-        />
-      </div>
-      <button class="add-btn">
-        <div class="plus-icon">+</div>
-      </button>
+    <div v-if="!collapsed" class="search-container">
+      <a-input
+          placeholder="搜索 Ctrl+J"
+          allow-clear
+          size="large"
+          class="search-input"
+      >
+        <template #prefix>
+          <icon-search />
+        </template>
+      </a-input>
+      <a-button type="primary" shape="circle" size="large" class="add-btn">
+        <template #icon>
+          <icon-plus />
+        </template>
+      </a-button>
     </div>
 
     <!-- 功能菜单项 -->
-    <nav class="menu" v-if="!collapsed">
-      <div
-          class="menu-item"
-          @click="handleMenuClick(startCreateItem)"
-          :class="{ active: selectedMenuItem === startCreateItem.id }"
-      >
-        <i class="iconfont icon-create" />
-        <span class="label"><Edit class="inline-icon" /> {{ startCreateItem.label }}</span>
-        <span class="hover-effect"></span>
-      </div>
-
-      <div
+    <a-menu
+        v-if="!collapsed"
+        :selected-keys="[selectedMenuItem]"
+        class="menu"
+        @menu-item-click="(key) => handleMenuClick(menuItems.find(item => item.id === key) || startCreateItem)"
+    >
+      <a-menu-item :key="startCreateItem.id">
+        <template #icon>
+          <Edit class="inline-icon" />
+        </template>
+        {{ startCreateItem.label }}
+      </a-menu-item>
+      <a-menu-item
           v-for="item in menuItems"
           :key="item.id"
-          class="menu-item"
-          @click="handleMenuClick(item)"
-          :class="{ active: selectedMenuItem === item.id }"
       >
-        <i :class="['iconfont', item.icon]" />
-        <span class="label">{{ item.label }}</span>
-        <span class="hover-effect"></span>
-      </div>
-    </nav>
+        <template #icon>
+          <icon-robot v-if="item.id === 'ai/documents'" />
+          <icon-apps v-else />
+        </template>
+        {{ item.label }}
+      </a-menu-item>
+    </a-menu>
 
     <!-- 知识库区域 -->
     <div class="repos" v-if="!collapsed">
       <div class="section-title-wrapper">
         <h3 class="section-title"><BookOpen class="inline-icon" /> 我的知识库</h3>
-        <button class="add-repo-btn" @click="isCreateModalVisible = true"><strong>+</strong></button>
+        <a-button type="primary" shape="circle" size="small" @click="isCreateModalVisible = true">
+          <template #icon>
+            <icon-plus />
+          </template>
+        </a-button>
       </div>
-      <ul class="repo-list">
-        <li
+      <a-list :bordered="false" class="repo-list">
+        <a-list-item
             v-for="repo in repositories"
             :key="repo.id"
             class="repo-item"
             @click="selectRepository(repo)"
         >
-          <i class="iconfont icon-folder" />
-          <span class="repo-name"><Folder class="inline-icon" /> {{ repo.name }}</span>
-          <span class="hover-effect"></span>
-        </li>
-      </ul>
+          <template #actions>
+            <a-button type="text" size="small">
+              <template #icon>
+                <icon-more />
+              </template>
+            </a-button>
+          </template>
+          <a-list-item-meta>
+            <template #avatar>
+              <Folder class="inline-icon" />
+            </template>
+            <template #title>
+              <span class="repo-name">{{ repo.name }}</span>
+            </template>
+          </a-list-item-meta>
+        </a-list-item>
+      </a-list>
     </div>
 
     <!-- 创建知识库弹窗 -->
-    <div v-if="isCreateModalVisible" class="modal-overlay">
-      <div class="modal">
-        <h3>新建知识库</h3>
-        <input
-            type="text"
-            placeholder="请输入知识库名称"
-            v-model="newRepoName"
-            class="modal-input"
-        />
-        <div class="modal-actions">
-          <button class="modal-btn cancel" @click="isCreateModalVisible = false">取消</button>
-          <button class="modal-btn confirm" @click="handleCreateRepository">创建</button>
-        </div>
-      </div>
-    </div>
+    <a-modal
+        v-model:visible="isCreateModalVisible"
+        title="新建知识库"
+        @ok="handleCreateRepository"
+        @cancel="isCreateModalVisible = false"
+    >
+      <a-input
+          v-model="newRepoName"
+          placeholder="请输入知识库名称"
+          :max-length="50"
+          show-word-limit
+      />
+    </a-modal>
   </aside>
 </template>
 
@@ -179,6 +287,19 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import api from '../api/index'
 import { User, BookOpen, Folder, Edit, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import {
+  IconSettings,
+  IconHome,
+  IconRight,
+  IconDown,
+  IconSearch,
+  IconPlus,
+  IconRobot,
+  IconApps,
+  IconMore,
+  IconGift,
+  IconPoweroff
+} from '@arco-design/web-vue/es/icon'
 
 /**
  * 组织数据结构定义
@@ -430,22 +551,7 @@ function onUserMouseLeave() {
   }, 100)
 }
 
-// 组织 tooltip hover 逻辑
-async function onOrgMouseEnter() {
-  if (orgTooltipHideTimer) {
-    clearTimeout(orgTooltipHideTimer)
-    orgTooltipHideTimer = null
-  }
-  showOrgTooltip.value = true
-  // TODO: 获取组织列表数据并显示
-  await getOrganizationListQuickly();
-}
-
-function onOrgMouseLeave() {
-  orgTooltipHideTimer = setTimeout(() => {
-    showOrgTooltip.value = false
-  }, 100)
-}
+// 组织 tooltip hover 逻辑已由 a-popover 处理
 
 // 计算头像样式和文本
 const avatarText = computed(() => {
@@ -483,18 +589,56 @@ onMounted(() => {
   position: relative;
   width: 280px;
   background-color: #ffffff; /* 中性背景 */
-  /* 移除右边框 */
   height: 100vh; /* 全屏高度 */
   padding: 1.25rem 0.875rem 0; /* 更紧凑的内边距 */
   transition: all 0.3s ease; /* 平滑过渡效果 */
-  overflow: visible; /* 允许内容溢出 */
+  overflow-y: auto; /* 允许垂直滚动 */
+  overflow-x: hidden; /* 隐藏水平滚动 */
   box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04); /* 细分隔阴影 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 自定义滚动条样式 */
+.left-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb {
+  background: #c9cdd4;
+  border-radius: 3px;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #86909c;
 }
 
 /* 折叠状态下的样式 */
 .left-sidebar.collapsed {
-  width: 45px;
+  width: 60px;
   padding: 1.5rem 0.5rem 0;
+  overflow: visible;
+  align-items: center;
+}
+
+/* 折叠状态下的用户头像 */
+.collapsed-user-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.collapsed-user-avatar:hover {
+  background-color: #f7f8fa;
 }
 
 /* ========== 折叠按钮样式 ========== */
@@ -532,16 +676,20 @@ onMounted(() => {
 /* ========== 用户卡片样式 ========== */
 
 .user-org-card {
-  border-radius: 12px; /* 圆角 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 自定义缓动效果 */
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
   position: relative;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e5e7eb;
 }
 
 /* 悬停效果 */
 .user-org-card:hover {
-  transform: translateY(-2px); /* 上浮效果 */
-  box-shadow: 0 4px 12px rgba(148, 108, 230, 0.15); /* 阴影增强 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.15);
+  border-color: #165dff;
 }
 
 .user-org {
@@ -549,104 +697,152 @@ onMounted(() => {
   align-items: center;
 }
 
-/* 用户头像样式 */
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%; /* 圆形 */
-  margin-right: 0.75rem; /* 右边距 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #e5e7eb; /* 中性边框 */
-  box-shadow: 0 2px 4px rgba(2, 6, 23, 0.06); /* 阴影 */
-}
-
-.avatar-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
+.user-avatar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ffffff;
 }
 
 .user-meta {
-  flex: 1; /* 占据剩余空间 */
+  flex: 1;
   display: flex;
-  flex-direction: column; /* 垂直排列 */
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* 用户昵称样式 */
 .nickname {
-  font-size: 15px;
-  font-weight: 600; /* 加粗 */
-  color: #0f172a; /* 中性文字 */
-  margin-bottom: 6px; /* 下边距 */
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.user-role {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* 用户面板样式 */
+.user-panel {
+  width: 260px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.panel-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  text-align: center;
+}
+
+.panel-avatar {
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.panel-username {
+  margin: 0 0 8px 0 !important;
+}
+
+.user-type {
+  margin-bottom: 16px;
+  display: block;
+}
+
+.upgrade-btn {
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.panel-menu {
+  padding: 8px 0;
+}
+
+:deep(.panel-menu .arco-menu-item) {
+  padding: 8px 16px;
+  margin: 0 8px;
+  border-radius: 8px;
+  height: auto;
+  line-height: 1.5;
+}
+
+:deep(.panel-menu .arco-menu-item:hover) {
+  background: #f2f3f5;
 }
 
 /* ========== 组织信息栏样式 ========== */
 .org-info-wrapper {
   position: relative;
-  margin: 0.75rem 0 1.25rem; /* 外边距 */
-  perspective: 1000px; /* 3D透视效果 */
-  z-index: 100; /* 层级 */
+  margin: 0 0 1rem;
+  z-index: 100;
 }
 
 .org-info-card {
   position: relative;
-  display: flex;
-  align-items: center;
-  padding: 10px 12px; /* 更紧凑的内边距 */
-  background: white; /* 白色背景 */
-  border-radius: 10px; /* 圆角 */
-  border: 1px solid #e5e7eb; /* 中性边框 */
-  box-shadow: 0 1px 0 rgba(2, 6, 23, 0.04); /* 细分隔阴影 */
-  cursor: pointer; /* 手型指针 */
-  transition: background-color 0.2s ease, box-shadow 0.2s ease; /* 轻量缓动 */
-  overflow: hidden; /* 隐藏溢出内容 */
-  z-index: 1; /* 层级 */
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e5e7eb;
 }
 
 /* 悬停效果 */
 .org-info-card:hover {
-  background: #f8fafc; /* 浅灰背景 */
-  transform: translateY(-1px); /* 轻微上浮 */
-  border-color: #dbeafe; /* 浅蓝边框 */
-  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.06); /* 轻阴影 */
+  transform: translateY(-1px);
+  border-color: #165dff;
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.15);
+}
+
+.org-info-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 /* 组织前缀文本样式 */
 .org-prefix {
-  font-size: 13px;
-  color: #718096; /* 灰色文字 */
-  margin-right: 4px; /* 右边距 */
-  white-space: nowrap; /* 不换行 */
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* 组织名称样式 */
 .org-name {
   font-size: 13px;
-  font-weight: 500; /* 中等粗细 */
-  color: #5e4dcd; /* 紫色文字 */
-  white-space: nowrap; /* 不换行 */
-  overflow: hidden; /* 隐藏溢出 */
-  text-overflow: ellipsis; /* 显示省略号 */
-  flex-grow: 1; /* 占据剩余空间 */
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-arrow {
+  color: #86909c;
+  transition: transform 0.2s ease;
+}
+
+.org-info-card:hover .org-arrow {
+  transform: translateX(2px);
+  color: #165dff;
 }
 
 /* ========== 组织工具提示样式 ========== */
-.org-tooltip {
-  position: absolute;
-  top: calc(100% + 8px); /* 定位在卡片下方 */
-  left: 0;
-  width: 100%;
-  background: white; /* 白色背景 */
-  border-radius: 12px; /* 圆角 */
-  box-shadow:
-      0 12px 28px rgba(0, 0, 0, 0.15), /* 大阴影 */
-      0 0 0 1px rgba(138, 109, 232, 0.1); /* 边框效果 */
-  border: 1px solid rgba(138, 109, 232, 0.2); /* 半透明紫色边框 */
-  z-index: 100; /* 层级 */
-  overflow: hidden; /* 隐藏溢出内容 */
-  transform-origin: top center; /* 变换原点 */
+.org-tooltip-content {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tooltip-header-wrapper {
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tooltip-header {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* 工具提示箭头 */
@@ -728,33 +924,34 @@ onMounted(() => {
 
 /* 组织列表容器 */
 .org-list-container {
-  max-height: 132px; /* 最大高度 */
-  overflow: hidden; /* 隐藏溢出 */
-  position: relative; /* 相对定位 */
+  max-height: 200px;
+  overflow-y: auto;
+  position: relative;
 }
 
-/* 组织项样式 */
-.org-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px; /* 内边距 */
-  cursor: pointer; /* 手型指针 */
-  transition: all 0.2s ease; /* 过渡效果 */
-  border-bottom: 1px solid rgba(138, 109, 232, 0.1); /* 底部边框 */
+:deep(.org-list-container .arco-list-item) {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f2f3f5;
 }
 
-.org-item:last-child {
-  border-bottom: none; /* 最后一项无边框 */
+:deep(.org-list-container .arco-list-item:last-child) {
+  border-bottom: none;
 }
 
 /* 悬停效果 */
-.org-item:hover {
-  background-color: #f8fafc; /* 浅灰背景 */
+:deep(.org-list-container .arco-list-item:hover) {
+  background-color: #f7f8fa;
 }
 
 /* 当前选中组织样式 */
-.org-item.active {
-  background-color: #eff6ff; /* 浅蓝背景 */
+.org-item-active {
+  background-color: #e8f3ff !important;
+}
+
+.org-item-active .org-item-name {
+  color: #165dff !important;
 }
 
 .org-item i {
@@ -922,142 +1119,80 @@ onMounted(() => {
 .search-container {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem; /* 下边距 */
-  gap: 8px; /* 子元素间距 */
-}
-
-.search-wrapper {
-  flex: 1; /* 占据剩余空间 */
-  display: flex;
-  align-items: center;
-  background: white; /* 白色背景 */
-  border-radius: 6px; /* 圆角 */
-  padding: 0 12px; /* 内边距 */
-  border: 1px solid #e0e0e0; /* 灰色边框 */
-  height: 36px; /* 固定高度 */
-  transition: all 0.2s ease; /* 过渡效果 */
-}
-
-/* 获取焦点时的样式 */
-.search-wrapper:focus-within {
-  border-color: #8a6de8; /* 紫色边框 */
-  box-shadow: 0 0 0 2px rgba(138, 109, 232, 0.2); /* 阴影 */
-}
-
-.icon-search {
-  color: #a0a4ab; /* 灰色图标 */
-  font-size: 16px; /* 图标大小 */
-  margin-right: 8px; /* 右边距 */
+  margin-bottom: 1.5rem;
+  gap: 8px;
 }
 
 .search-input {
-  flex: 1; /* 占据剩余空间 */
-  padding: 8px 0; /* 内边距 */
-  border: none;
-  outline: none; /* 无轮廓 */
-  font-size: 14px;
-  color: #2d3748; /* 深灰色文字 */
-  height: 100%; /* 全高 */
-  background: transparent; /* 透明背景 */
+  flex: 1;
 }
 
-.search-input::placeholder {
-  color: #a0a4ab; /* 灰色占位符 */
-  opacity: 1; /* 完全不透明 */
+:deep(.search-input .arco-input-wrapper) {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+:deep(.search-input .arco-input-wrapper:hover) {
+  border-color: #165dff;
+}
+
+:deep(.search-input .arco-input-wrapper.arco-input-focus) {
+  border-color: #165dff;
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
 }
 
 .add-btn {
-  width: 36px;
-  height: 36px;
-  background: #5e4dcd; /* 紫色背景 */
-  border: none;
-  border-radius: 6px; /* 圆角 */
-  cursor: pointer; /* 手型指针 */
-  transition: all 0.2s; /* 过渡效果 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0; /* 无内边距 */
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(22, 93, 255, 0.2);
+  transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-  background: #4c3cad; /* 深紫色背景 */
-}
-
-.plus-icon {
-  color: white; /* 白色图标 */
-  font-size: 20px; /* 图标大小 */
-  font-weight: 500; /* 中等粗细 */
-  line-height: 1; /* 行高 */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
 }
 
 /* 菜单样式 */
 .menu {
-  margin-bottom: 1.5rem; /* 下边距 */
+  margin-bottom: 1.5rem;
+  background: transparent;
+  border: none;
 }
 
-/* 激活菜单项样式 */
-.menu-item.active {
-  background-color: #eff6ff; /* 浅蓝背景 */
-  color: #2563eb; /* 蓝色文字 */
+:deep(.menu .arco-menu-item) {
+  margin-bottom: 2px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+  height: auto;
+  line-height: 1.5;
 }
 
-.menu-item.active .hover-effect {
-  width: 100%; /* 悬停效果全宽 */
+:deep(.menu .arco-menu-item:hover) {
+  background-color: #f7f8fa;
 }
 
-.menu-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 10px 14px; /* 内边距 */
-  border-radius: 8px; /* 圆角 */
-  cursor: pointer; /* 手型指针 */
-  color: #4e5969; /* 深灰色文字 */
-  font-size: 14px;
-  transition: all 0.2s ease; /* 过渡效果 */
-  overflow: hidden; /* 隐藏溢出 */
-  margin-bottom: 4px; /* 下边距 */
+:deep(.menu .arco-menu-item-selected) {
+  background-color: #e8f3ff;
+  color: #165dff;
+  font-weight: 500;
 }
 
-.menu-item i {
-  margin-right: 10px; /* 右边距 */
-  font-size: 16px; /* 图标大小 */
-  color: #2563eb; /* 蓝色图标 */
+:deep(.menu .arco-menu-item-selected .arco-icon) {
+  color: #165dff;
 }
 
-.menu-item .label {
-  display: flex;
-  align-items: center;
-  gap: 6px; /* 子元素间距 */
-}
-
-/* 悬停效果 */
-.hover-effect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0; /* 初始宽度为0 */
-  height: 100%; /* 全高 */
-  background: linear-gradient(90deg, rgba(219, 234, 254, 0.6), transparent); /* 渐变 */
-  transition: width 0.3s ease; /* 宽度过渡 */
-}
-
-/* 悬停时效果 */
-.menu-item:hover {
-  background-color: #f8fafc; /* 浅灰背景 */
-  color: #2563eb; /* 蓝色文字 */
-}
-
-.menu-item:hover .hover-effect {
-  width: 100%; /* 全宽 */
+:deep(.menu .arco-menu-item .arco-icon) {
+  font-size: 16px;
+  margin-right: 8px;
 }
 
 /* 知识库样式 */
 .section-title {
   font-size: 13px;
   font-weight: 600;
-  color: #2563eb;
+  color: #165dff;
   margin: 1rem 0 0.75rem;
   padding-left: 8px;
   letter-spacing: 0.5px;
@@ -1066,47 +1201,43 @@ onMounted(() => {
   gap: 6px;
 }
 
-.repo-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.repo-item {
-  position: relative;
-  padding: 10px 14px;
+.repo-list {
+  background: transparent;
+  border: none;
+}
+
+:deep(.repo-list .arco-list-item) {
+  padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  color: #4e5969;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
   margin-bottom: 4px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
-.repo-item i {
-  margin-right: 10px;
-  color: #2563eb;
-}
-
-.repo-item:hover {
-  background-color: #f8fafc;
-  color: #2563eb;
-}
-
-.repo-item:hover .hover-effect {
-  width: 100%;
+:deep(.repo-list .arco-list-item:hover) {
+  background-color: #f7f8fa;
+  border-color: #e5e7eb;
+  transform: translateX(2px);
 }
 
 .repo-name {
-  flex: 1;
+  font-size: 14px;
+  color: #1d2129;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+}
+
+:deep(.repo-list .arco-list-item:hover .repo-name) {
+  color: #165dff;
 }
 
 .user-panel-wrapper {

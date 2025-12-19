@@ -9,15 +9,25 @@
     <!-- 展开时内容区域 -->
     <div v-if="!collapsed" class="sidebar-content">
       <!-- 当前知识库 - 卡片设计 -->
-      <div class="repo-card" @click="emit('switchRepo')">
-        <div class="repo-label">当前知识库</div>
-        <div class="repo-name">
+      <a-card
+          class="repo-card"
+          :hoverable="true"
+          :bordered="false"
+          @click="emit('switchRepo')"
+      >
+        <a-typography-text type="secondary" class="repo-label">当前知识库</a-typography-text>
+        <a-typography-title :heading="6" class="repo-name">
           {{ currentRepo.name || '未选择' }}
-        </div>
-      </div>
+        </a-typography-title>
+      </a-card>
 
       <!-- 新建一级文档按钮 -->
-      <button class="create-btn" @click="createTopLevel">+ 新建一级文档</button>
+      <a-button type="primary" long @click="createTopLevel" class="create-btn">
+        <template #icon>
+          <icon-plus />
+        </template>
+        新建一级文档
+      </a-button>
 
       <NestedOutlineEditor
           v-model:items="documents"
@@ -36,6 +46,7 @@ import { defineProps, defineEmits, ref, watch } from 'vue'
 import NestedOutlineEditor from '../components/NestedOutlineEditor.vue'
 import api from '../api/index'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { IconPlus } from '@arco-design/web-vue/es/icon'
 
 interface DocumentItem {
   id: string
@@ -98,13 +109,34 @@ const createTopLevel = async () => {
   padding: 1.5rem;
   transition: all 0.3s ease;
   overflow-y: auto;
+  overflow-x: hidden;
   border-left: 1px solid #e8e0f5;
   box-shadow: 0 2px 12px rgba(148, 108, 230, 0.08);
+  height: 100vh;
+}
+
+/* 自定义滚动条样式 */
+.right-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.right-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb {
+  background: #c9cdd4;
+  border-radius: 3px;
+}
+
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #86909c;
 }
 
 .right-sidebar.collapsed {
   width: 24px;
   padding: 1.5rem 0.5rem;
+  overflow: visible;
 }
 
 /* 折叠按钮 */
@@ -139,33 +171,25 @@ const createTopLevel = async () => {
 
 /* 当前知识库区域 */
 .repo-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem;
   margin-bottom: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(148, 108, 230, 0.05);
 }
 
-.repo-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(148, 108, 230, 0.1);
+:deep(.repo-card .arco-card-body) {
+  padding: 1rem;
 }
 
 .repo-label {
-  font-size: 12px;
-  color: #999;
+  display: block;
   margin-bottom: 6px;
 }
 
 .repo-name {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
+  margin: 0;
+}
+
+.create-btn {
+  margin-bottom: 1.5rem;
 }
 
 .repo-icon {

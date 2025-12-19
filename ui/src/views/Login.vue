@@ -2,111 +2,198 @@
   <div class="login-wrapper">
     <canvas ref="bgCanvas" class="bg-canvas"></canvas>
     <transition name="fade">
-      <div class="login-card" key="card">
-        <h1 class="logo">CoWrite</h1>
+      <a-card class="login-card" :bordered="false">
+        <template #title>
+          <h1 class="logo">CoWrite</h1>
+        </template>
 
         <!-- 登录方式切换 -->
-        <div class="tab-selector">
-          <button
-              :class="{ active: mode === 'email' }"
-              @click="switchMode('email')"
-          >
+        <a-radio-group
+            v-model="mode"
+            type="button"
+            class="tab-selector"
+            @change="switchMode"
+        >
+          <a-radio value="email">
             <MailIcon class="icon" />
             邮箱登录
-          </button>
-          <button
-              :class="{ active: mode === 'account' }"
-              @click="switchMode('account')"
-          >
+          </a-radio>
+          <a-radio value="account">
             <UserIcon class="icon" />
             账号登录
-          </button>
-        </div>
+          </a-radio>
+        </a-radio-group>
 
         <transition name="slide-fade" mode="out-in">
-          <form :key="mode" @submit.prevent="handleLogin">
+          <a-form
+              :key="mode"
+              :model="formData"
+              @submit="handleLogin"
+              layout="vertical"
+              class="login-form"
+              :required-symbol="false"
+          >
             <div v-if="mode === 'email'" class="mode-block">
-              <div class="form-group">
-                <input type="email" placeholder="邮箱" v-model="email" required />
-              </div>
-              <div class="form-group code-row">
-                <input
-                    type="text"
-                    placeholder="验证码"
-                    v-model="code"
-                    maxlength="6"
-                    pattern="\d*"
-                    required
-                />
-                <button
-                    type="button"
-                    class="code-button"
-                    :disabled="codeCooldown > 0 || !email"
-                    @click="sendCode"
+              <a-form-item
+                  field="email"
+                  label=""
+                  :rules="[
+                    { required: true, message: '请输入邮箱' },
+                    { type: 'email', message: '请输入有效的邮箱地址' }
+                  ]"
+                  :validate-trigger="['blur']"
+              >
+                <a-input
+                    v-model="formData.email"
+                    placeholder="请输入邮箱"
+                    size="large"
+                    allow-clear
                 >
-                  <svg v-if="codeCooldown > 0" class="ring" viewBox="0 0 36 36">
-                    <path
-                        class="progress"
-                        :stroke-dasharray="`${(60 - codeCooldown) / 60 * 100}, 100`"
-                        d="M18 2 a 16 16 0 1 1 0 32 a 16 16 0 1 1 0 -32"
-                    />
-                  </svg>
-                  <span>
-                    {{ codeCooldown > 0 ? `${codeCooldown}s` : '发送验证码' }}
-                  </span>
-                </button>
-              </div>
+                  <template #prefix>
+                    <MailIcon class="icon" />
+                  </template>
+                </a-input>
+              </a-form-item>
+              <a-form-item
+                  field="code"
+                  label=""
+                  :rules="[
+                    { required: true, message: '请输入验证码' },
+                    { length: 6, message: '验证码必须为6位数字' },
+                    { match: /^\d{6}$/, message: '验证码只能包含数字' }
+                  ]"
+                  :validate-trigger="['blur']"
+              >
+                <a-input-group>
+                  <a-input
+                      v-model="formData.code"
+                      placeholder="请输入验证码"
+                      size="large"
+                      maxlength="6"
+                      allow-clear
+                  >
+                    <template #prefix>
+                      <LockIcon class="icon" />
+                    </template>
+                  </a-input>
+                  <a-button
+                      type="primary"
+                      size="large"
+                      :disabled="codeCooldown > 0 || !formData.email"
+                      @click="sendCode"
+                      :loading="sendingCode"
+                  >
+                    <template v-if="codeCooldown > 0">
+                      {{ codeCooldown }}s
+                    </template>
+                    <template v-else>
+                      发送验证码
+                    </template>
+                  </a-button>
+                </a-input-group>
+              </a-form-item>
             </div>
 
             <div v-else class="mode-block">
-              <div class="form-group">
-                <input type="text" placeholder="用户名" v-model="username" required />
-              </div>
-              <div class="form-group">
-                <input type="password" placeholder="密码" v-model="password" required />
-              </div>
+              <a-form-item
+                  field="username"
+                  label=""
+                  :rules="[{ required: true, message: '请输入用户名' }]"
+                  :validate-trigger="['blur']"
+              >
+                <a-input
+                    v-model="formData.username"
+                    placeholder="请输入用户名"
+                    size="large"
+                    allow-clear
+                >
+                  <template #prefix>
+                    <UserIcon class="icon" />
+                  </template>
+                </a-input>
+              </a-form-item>
+              <a-form-item
+                  field="password"
+                  label=""
+                  :rules="[{ required: true, message: '请输入密码' }]"
+                  :validate-trigger="['blur']"
+              >
+                <a-input-password
+                    v-model="formData.password"
+                    placeholder="请输入密码"
+                    size="large"
+                    allow-clear
+                >
+                  <template #prefix>
+                    <LockIcon class="icon" />
+                  </template>
+                </a-input-password>
+              </a-form-item>
               <div class="forgot-password">
-                <a href="#" @click.prevent="onForgotPassword">忘记密码？</a>
+                <a-link @click="onForgotPassword">忘记密码？</a-link>
               </div>
             </div>
 
-            <button type="submit" class="submit-button" :disabled="loading">
-              <LoaderIcon v-if="loading" class="icon spin" />
-              <span v-else>登录</span>
-            </button>
-          </form>
+            <a-form-item>
+              <a-button
+                  type="primary"
+                  html-type="submit"
+                  size="large"
+                  long
+                  :loading="loading"
+                  class="submit-button"
+              >
+                <template v-if="!loading">登录</template>
+                <template v-else>登录中...</template>
+              </a-button>
+            </a-form-item>
+          </a-form>
         </transition>
 
-        <div class="divider">或</div>
+        <a-divider>或</a-divider>
 
-        <button class="github-button" @click="loginWithGitHub">
-          <GithubIcon class="icon" /> GitHub 登录
-        </button>
-      </div>
+        <a-button
+            type="outline"
+            size="large"
+            long
+            @click="loginWithGitHub"
+            class="github-button"
+        >
+          <template #icon>
+            <GithubIcon class="icon" />
+          </template>
+          GitHub 登录
+        </a-button>
+      </a-card>
     </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   MailIcon,
   UserIcon,
   GithubIcon,
-  LoaderIcon,
+  LockIcon,
 } from 'lucide-vue-next'
+import { Message } from '@arco-design/web-vue'
 
 import api from '../api/index.js';
 const router = useRouter()
 import { useAuth } from '../composables/useAuth'
 const { setToken, setUserInfo } = useAuth()
+
 const mode = ref<'email' | 'account'>('email')
-const email = ref('2148582258@qq.com')
-const code = ref('')
-const username = ref('')
-const password = ref('')
+const formData = reactive({
+  email: '2148582258@qq.com',
+  code: '',
+  username: '',
+  password: '',
+})
 const loading = ref(false)
+const sendingCode = ref(false)
 const codeCooldown = ref(0)
 let timer: any = null
 
@@ -186,16 +273,19 @@ onMounted(() => {
   })
 })
 
-const switchMode = (m: 'email' | 'account') => {
-  mode.value = m
+const switchMode = (value: string) => {
+  mode.value = value as 'email' | 'account'
 }
 
 // 发送验证码
 const sendCode = async () => {
-  if (!email.value) return
+  if (!formData.email) {
+    Message.warning('请输入邮箱')
+    return
+  }
   try {
-    loading.value = true
-    await api.userApi.sendVerificationCode(email.value)  // 调用发送验证码的接口
+    sendingCode.value = true
+    await api.userApi.sendVerificationCode(formData.email)
 
     codeCooldown.value = 60
     timer = setInterval(() => {
@@ -205,106 +295,83 @@ const sendCode = async () => {
         clearInterval(timer)
       }
     }, 1000)
-  } catch (e) {
-    alert('发送失败')
+    Message.success('验证码已发送')
+  } catch (e: any) {
+    Message.error(e.message || '发送失败')
   } finally {
-    loading.value = false
+    sendingCode.value = false
   }
 }
 
-const validateEmail = (val: string): boolean => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-}
-
-const validateCode = (val: string): boolean => {
-  return /^\d{6}$/.test(val)
-}
-
-const handleLogin = async () => {
-  if (mode.value === 'email') {
-    if (!validateEmail(email.value)) {
-      alert('请输入有效邮箱')
-      return
-    }
-    if (!validateCode(code.value)) {
-      alert('验证码必须为 6 位数字')
-      return
-    }
-  } else {
-    if (!username.value.trim()) {
-      alert('请输入用户名')
-      return
-    }
-    if (!password.value.trim()) {
-      alert('请输入密码')
-      return
-    }
+const handleLogin = async (data: { values: any; errors: any }) => {
+  if (data.errors) {
+    return
   }
 
   loading.value = true
   try {
     const payload =
         mode.value === 'email'
-            ? { email: email.value, code: code.value }
-            : { username: username.value, password: password.value }
+            ? { email: formData.email, code: formData.code }
+            : { username: formData.username, password: formData.password }
 
-    const data =
+    const response =
         mode.value === 'email'
             ? await api.userApi.login(payload)
             : await api.userApi.register(payload)
 
     // 登录失败时，尝试自动注册
-    if (data.code === 500 && data.message === '邮箱未注册') {
-      const shouldRegister = confirm('检测到您还未注册账号，现在自动为您注册')
-      if (shouldRegister) {
-        try {
-          console.log(code.value)
-          console.log(email.value)
-
-          // 自动注册
-          const registerData = await api.userApi.register({
-            email: email.value,
-            code: code.value
-          })
-
-          if (registerData.data?.token) {
-            // 注册成功后，保存 token 和用户信息
-            setToken(registerData.data.token)
-            setUserInfo({
-              username: registerData.data.username,
-              email: registerData.data.email,
-              avatarUrl: registerData.data.avatarUrl,
-              bio: registerData.data.bio,
-              language: registerData.data.language,
-              themeDark: registerData.data.themeDark,
-              status: registerData.data.status
-            })
-            router.push('/')
-          } else {
-            alert('注册失败')
-          }
-        } catch (regErr: any) {
-          alert(regErr.message || '注册失败')
-        }
-      }
-    } else if (data.data?.token) {
-      // 登录成功，保存 token 和用户信息
-      setToken(data.data.token)
-      setUserInfo({
-        username: data.data.username,
-        email: data.data.email,
-        avatarUrl: data.data.avatarUrl,
-        bio: data.data.bio,
-        language: data.data.language,
-        themeDark: data.data.themeDark,
-        status: data.data.status
+    if (response.code === 500 && response.message === '邮箱未注册') {
+      Message.info({
+        content: '检测到您还未注册账号，正在为您自动注册...',
+        duration: 3000
       })
+      try {
+        // 自动注册
+        const registerData = await api.userApi.register({
+          email: formData.email,
+          code: formData.code
+        })
+
+        if (registerData.data?.token) {
+          // 注册成功后，保存 token 和用户信息
+          setToken(registerData.data.token)
+          setUserInfo({
+            username: registerData.data.username,
+            email: registerData.data.email,
+            avatarUrl: registerData.data.avatarUrl,
+            bio: registerData.data.bio,
+            language: registerData.data.language,
+            themeDark: registerData.data.themeDark,
+            status: registerData.data.status
+          })
+          Message.success('注册成功，正在跳转...')
+          router.push('/')
+        } else {
+          Message.error('注册失败')
+        }
+      } catch (regErr: any) {
+        Message.error(regErr.message || '注册失败')
+      }
+    } else if (response.data?.token) {
+      // 登录成功，保存 token 和用户信息
+      setToken(response.data.token)
+      setUserInfo({
+        username: response.data.username,
+        email: response.data.email,
+        avatarUrl: response.data.avatarUrl,
+        bio: response.data.bio,
+        language: response.data.language,
+        themeDark: response.data.themeDark,
+        status: response.data.status
+      })
+      Message.success('登录成功，正在跳转...')
       router.push('/')
     } else {
-      alert('登录失败')
+      Message.error(response.message || '登录失败')
     }
   } catch (err: any) {
-    alert(err.message)
+    Message.error(err.message || '登录失败，请稍后重试')
   } finally {
     loading.value = false
   }
@@ -318,7 +385,10 @@ const loginWithGitHub = () => {
 
 // 忘记密码处理
 const onForgotPassword = () => {
-  alert('请联系管理员重置密码或前往找回页面')
+  Message.info({
+    content: '请联系管理员重置密码或前往找回页面',
+    duration: 3000
+  })
 }
 </script>
 
@@ -343,15 +413,21 @@ const onForgotPassword = () => {
 .login-card {
   position: relative;
   z-index: 1;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.85);
-  padding: 2.2rem;
-  border-radius: 18px;
   width: 100%;
   max-width: 420px;
-  text-align: center;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 20px 60px rgba(16, 24, 40, 0.12);
   animation: scaleIn 0.4s ease;
+}
+
+:deep(.arco-card-body) {
+  padding: 2.2rem;
+}
+
+:deep(.arco-card-header) {
+  padding: 0 0 1.2rem 0;
+  border-bottom: none;
 }
 
 @keyframes scaleIn {
@@ -363,178 +439,92 @@ const onForgotPassword = () => {
   font-size: 30px;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 1.2rem;
+  margin: 0;
+  text-align: center;
 }
 
 .tab-selector {
-  display: flex;
-  margin-bottom: 1.2rem;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid #ddd;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
-.tab-selector button {
+:deep(.tab-selector .arco-radio-group) {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+}
+
+:deep(.tab-selector .arco-radio-button) {
   flex: 1;
-  padding: 0.6rem;
-  font-weight: 500;
-  background: #f0f9ff;
-  color: #0c4a6e;
-  border: none;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
 }
 
-.tab-selector button.active {
-  background-color: #0ea5e9;
-  color: white;
+:deep(.tab-selector .arco-radio-button .icon) {
+  width: 16px;
+  height: 16px;
 }
 
 .mode-block {
   transition: all 0.3s ease;
 }
 
-.form-group {
-  width: 95%;
-  text-align: left;
-  margin-bottom: 1rem;
+.login-form {
+  margin-top: 1rem;
 }
 
-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 14px;
-  transition: border 0.3s ease;
+:deep(.login-form .arco-form-item) {
+  margin-bottom: 1.2rem;
 }
 
-input:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
-  outline: none;
+:deep(.login-form .arco-form-item-label) {
+  display: none !important;
 }
 
-.code-row {
+:deep(.login-form .arco-form-item-label-required) {
+  display: none !important;
+}
+
+:deep(.login-form .arco-input-wrapper) {
+  border-radius: 8px;
+}
+
+:deep(.login-form .arco-input-group) {
   display: flex;
   gap: 8px;
-  align-items: center;
 }
 
-.code-button {
-  position: relative;
-  padding: 0.5rem 0.95rem;
-  font-size: 13px;
-  background: #0ea5e9;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  min-width: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.code-button .ring {
-  width: 20px;
-  height: 20px;
-  margin-right: 4px;
-}
-
-.code-button .progress {
-  fill: none;
-  stroke: white;
-  stroke-width: 3;
-  stroke-linecap: round;
+:deep(.login-form .arco-input-group .arco-input-wrapper) {
+  flex: 1;
 }
 
 .forgot-password {
   text-align: right;
-  font-size: 13px;
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
-}
-
-.forgot-password a {
-  color: #0ea5e9;
-  text-decoration: none;
+  margin-top: -0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 .submit-button {
-  width: 100%;
-  padding: 0.6rem;
-  background-color: #0ea5e9;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .github-button {
-  width: 100%;
-  padding: 0.6rem;
-  background-color: #1f2937;
-  color: white;
-  font-size: 15px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
-.github-button:hover {
-  background-color: #111827;
-}
-
-.divider {
-  margin: 1rem 0;
-  font-size: 13px;
-  color: #777;
-}
-
-.icon {
+.github-button .icon {
   width: 18px;
   height: 18px;
 }
 
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0); }
-  100% { transform: rotate(360deg); }
-}
-
-input:invalid {
-  animation: shake 0.3s ease;
-  border-color: red;
-}
-
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
+:deep(.arco-divider-text) {
+  color: #86909c;
+  font-size: 13px;
 }
 
 </style>

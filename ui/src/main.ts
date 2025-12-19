@@ -4,9 +4,19 @@ import App from './App.vue';
 import router from './router';
 import Notify from './plugins/notify'
 
-createApp(App).use(router).use(Notify).mount('#app').$nextTick(() => {
+// Arco Design
+import ArcoVue from '@arco-design/web-vue';
+import '@arco-design/web-vue/dist/arco.css';
+
+const app = createApp(App);
+app.use(router);
+app.use(Notify);
+app.use(ArcoVue);
+app.mount('#app').$nextTick(() => {
   // Use contextBridge
-  window.ipcRenderer.on('main-process-message', (_event, message) => {
-    console.log(message);
-  });
+  if (window.ipcRenderer) {
+    window.ipcRenderer.on('main-process-message', (_event, message) => {
+      console.log(message);
+    });
+  }
 });
